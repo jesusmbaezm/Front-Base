@@ -1,0 +1,14 @@
+<h2 mat-dialog-title>Sesión por expirar</h2>
+
+<mat-dialog-content>
+  Tu sesión se cerrará por inactividad en
+  <strong>{{ data.remainingSeconds }}</strong>
+  segundos.
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="logoutNow()">Cerrar sesión</button>
+  <button mat-raised-button color="primary" (click)="stayLoggedIn()">
+    Continuar sesión
+  </button>
+</mat-dialog-actions>

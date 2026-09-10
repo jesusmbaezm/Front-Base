@@ -1,0 +1,70 @@
+@use "sass:map";
+@use "@angular/material" as mat;
+
+@include mat.table-overrides(
+  (
+    background-color: var(--mat-card-elevated-container-color),
+  )
+);
+
+table.mat-mdc-table {
+  --mat-table-row-item-container-height: 52px;
+  --mat-table-header-container-height: 44px;
+  --mat-table-footer-container-height: 52px;
+}
+
+.mat-mdc-row .mat-mdc-cell {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  height: 52px !important;
+}
+
+/* ── Inline row action buttons ───────────────── */
+.row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+.auth-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 0.8; }
+  &:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  &.view    { background: #F8FAFC; color: #6B7280; border-color: #E5E7EB; }
+  &.approve { background: #F0FBF7; color: #059669; border-color: #A7F3D0; }
+  &.reject  { background: #FEF2F2; color: #C0392B; border-color: #FECACA; }
+  &.edit    { background: #FFFBEB; color: #D97706; border-color: #FDE68A; }
+  &.delete  { background: #FEF2F2; color: #C0392B; border-color: #FECACA; }
+  &.send    { background: #EFF3FF; color: #2F4499; border-color: #C7D2FE; }
+  &.print   { background: #EFF3FF; color: #2F4499; border-color: #C7D2FE; }
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    line-height: 17px;
+  }
+}
+
+.mat-mdc-header-row .mat-mdc-header-cell {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  height: 44px !important;
+  background: #ffffff !important;
+  color: #aaa !important;
+  border-bottom: 2px solid #eee !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+}

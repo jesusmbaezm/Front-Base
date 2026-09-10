@@ -1,0 +1,163 @@
+<div class="page-content">
+  <header class="page-header">
+    <div>
+      <h1>Backorders consolidado</h1>
+      <p>Listado consolidado de backorders de la sucursal principal (<strong>{{ mainBranchName() }}</strong>)</p>
+    </div>
+    <div class="page-header__actions">
+      @if (hasMainBranch()) {
+        <ng-container *appHasPermission="Permissions.supply.consolidatedBackorder.export">
+          <button class="btn-stroked" (click)="btnExportToExcel()" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <mat-spinner diameter="14"></mat-spinner>
+            } @else {
+              <mat-icon>download</mat-icon>
+            }
+            Exportar
+          </button>
+        </ng-container>
+      }
+    </div>
+  </header>
+
+  @if (!branchCheckDone()) {
+    <div class="tbl-card">
+      <div class="empty-state">
+        <mat-spinner diameter="36"></mat-spinner>
+      </div>
+    </div>
+  } @else if (!hasMainBranch()) {
+    <div class="tbl-card">
+      <div class="empty-state">
+        <mat-icon>store_off</mat-icon>
+        <p>Sin acceso a <strong>{{ mainBranchName() }}</strong></p>
+        <p>Solo los usuarios con acceso a matriz pueden consultar esta vista.</p>
+      </div>
+    </div>
+  } @else {
+
+  <mat-card class="filters-card demo-card">
+    <mat-card-content>
+      <div class="filters-toolbar">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+          <mat-label>Buscar</mat-label>
+          <input
+            matInput
+            [value]="searchControl()"
+            (input)="searchControl.set($any($event.target).value); loadBackOrdes()"
+            placeholder="Nombre o descripción"
+          />
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" floatLabel="always" class="select-field">
+          <mat-label>Sucursal</mat-label>
+          <mat-select [ngModel]="selectedBranch()" (ngModelChange)="selectedBranch.set($event); loadBackOrdes()" placeholder="Todas">
+            <mat-option [value]="null">Todas</mat-option>
+            @for (branch of branches(); track branch.id) {
+              <mat-option [value]="branch.id">{{ branch.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <app-category-select
+          class="select-field"
+          [ngModel]="selectedCategory()"
+          (selectionChange)="selectedCategory.set($event?.id ?? null); loadBackOrdes()"
+        ></app-category-select>
+
+        <div class="filters-actions">
+          <app-button
+            variant="ghost"
+            matIcon="filter_alt_off"
+            [iconOnly]="true"
+            (onClick)="clearFilters()"
+            matTooltip="Limpiar filtros"
+          ></app-button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="tbl-card">
+    @if (isLoading()) {
+      <div class="loading-overlay">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    }
+    <div class="table-container">
+      <table mat-table [dataSource]="visibleTableRows" matSort>
+
+        <ng-container matColumnDef="group-header">
+          <td mat-cell *matCellDef="let row" [attr.colspan]="displayedColumns.length" class="category-group-cell" (click)="toggleCategory(row.categoryName)">
+            <div class="category-group-inner">
+              <span class="category-group-label">{{ row.categoryName }}</span>
+              <mat-icon class="category-expand-icon" [class.collapsed]="isCollapsed(row.categoryName)">expand_more</mat-icon>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="branchName">
+          <th mat-header-cell *matHeaderCellDef>Sucursal</th>
+          <td mat-cell *matCellDef="let row"><strong>{{ row.data.branchName }}</strong></td>
+        </ng-container>
+
+        <ng-container matColumnDef="product">
+          <th mat-header-cell *matHeaderCellDef>Producto</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="product-variant-cell">
+              <span class="product-name">{{ row.data.productName }}</span>
+              <span class="variant-info">
+                {{ row.data.variantDescription }}
+                <span class="sku-code">({{ row.data.sku }})</span>
+              </span>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="quantity">
+          <th mat-header-cell *matHeaderCellDef class="col-center">Pendiente Surtir</th>
+          <td mat-cell *matCellDef="let row" class="col-center">{{ row.data.pendingQuantity }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="fulfilledQuantity">
+          <th mat-header-cell *matHeaderCellDef class="col-center">En Tránsito</th>
+          <td mat-cell *matCellDef="let row" class="col-center">{{ row.data.inTransitQuantity }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="branchAvailableStock">
+          <th mat-header-cell *matHeaderCellDef class="col-center">Stock disponible</th>
+          <td mat-cell *matCellDef="let row" class="col-center">{{ row.data.originAvailableStock }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="originAvailableStock">
+          <th mat-header-cell *matHeaderCellDef class="col-center">Stock sucursal</th>
+          <td mat-cell *matCellDef="let row" class="col-center">{{ row.data.branchAvailableStock }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['group-header']; when: isGroupRow" class="category-group-row"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+        <tr class="empty-row" *matNoDataRow>
+          <td [attr.colspan]="displayedColumns.length">
+            <div class="empty-state">
+              <mat-icon>inventory_2</mat-icon>
+              <p>No se encontraron backorders</p>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <app-paginator
+      [totalItems]="totalCount()"
+      [currentPage]="pageIndex() + 1"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="[10, 25, 50]"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    ></app-paginator>
+  </div>
+  } <!-- end @else hasMainBranch -->
+</div>

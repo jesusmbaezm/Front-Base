@@ -1,0 +1,1015 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+@use 'themecolors/blue_theme';
+
+@use 'variables' as *;
+@use 'override-component';
+@use 'theme-variables/default-variables';
+@use 'theme-variables/light-theme-variables';
+
+//container layout
+@use 'layouts/transitions';
+@use 'helpers/color';
+@use 'helpers/border-color';
+@use 'helpers/icon-size';
+@use 'container';
+@use 'layouts/layouts';
+@use 'grid/grid';
+@use 'helpers/custom-flex';
+@use 'helpers/index';
+
+@use 'pages/auth';
+@use 'pages/dashboards';
+
+@include mat.core();
+
+// Define palettes
+$primary: mat.m2-define-palette(mat.$m2-indigo-palette);
+$accent: mat.m2-define-palette(mat.$m2-pink-palette, A200, A100, A400);
+$warn: mat.m2-define-palette(mat.$m2-red-palette);
+
+// Light theme
+$light-theme: mat.m2-define-light-theme(
+  (
+    color: (
+      primary: $primary,
+      accent: $accent,
+      warn: $warn,
+    ),
+  )
+);
+
+// Dark theme
+$dark-theme: mat.m2-define-dark-theme(
+  (
+    color: (
+      primary: $primary,
+      accent: $accent,
+      warn: $warn,
+    ),
+  )
+);
+
+// Apply light theme by default
+@include mat.all-component-themes($light-theme);
+
+// Dark theme styles
+html.theme-dark {
+  @include mat.all-component-themes($dark-theme);
+
+  // Custom dark theme variables
+  --mat-text-primary: #ffffff;
+  --mat-text-secondary: rgba(255, 255, 255, 0.7);
+  --mat-surface: #121212;
+  --mat-surface-variant: #1e1e1e;
+  --mat-divider-color: rgba(255, 255, 255, 0.12);
+  --mat-primary-rgb: 121, 134, 203;
+
+  background-color: var(--mat-surface);
+  color: var(--mat-text-primary);
+}
+
+// Light theme variables
+:root {
+  --mat-text-primary: rgba(0, 0, 0, 0.87);
+  --mat-text-secondary: rgba(0, 0, 0, 0.6);
+  --mat-surface: #ffffff;
+  --mat-surface-variant: #f5f5f5;
+  --mat-divider-color: rgba(0, 0, 0, 0.12);
+  --mat-primary-rgb: 63, 81, 181;
+
+  // ── Table ─────────────────────────────────
+  --table-header-bg: #F7F9FC;
+  --table-header-color: #6B7280;
+
+  // ── Toast palette ─────────────────────────
+  --toast-success-border:  #059669;
+  --toast-success-bg:      #F0FBF7;
+  --toast-success-text:    #064E35;
+  --toast-success-action:  #059669;
+
+  --toast-error-border:    #C0392B;
+  --toast-error-bg:        #FEF2F2;
+  --toast-error-text:      #7B1D1D;
+  --toast-error-action:    #C0392B;
+
+  --toast-warning-border:  #F5A623;
+  --toast-warning-bg:      #FFFBEB;
+  --toast-warning-text:    #5C3800;
+  --toast-warning-action:  #5C3800;
+
+  --toast-info-border:     #2F4499;
+  --toast-info-bg:         #EFF3FF;
+  --toast-info-text:       #1C2B5E;
+  --toast-info-action:     #2F4499;
+
+  --toast-neutral-border:  #6B7280;
+  --toast-neutral-bg:      #F7F9FC;
+  --toast-neutral-text:    #1A1F36;
+  --toast-neutral-action:  #6B7280;
+}
+
+::ng-deep .mat-mdc-raised-button:hover {
+  background-color: orange;
+}
+
+body {
+  margin: 0px !important;
+}
+
+.confirm-dialog-custom .mat-mdc-dialog-actions button,
+.mat-mdc-dialog-actions .mat-mdc-button {
+  /* Hover general */
+  &:hover {
+    transform: translateY(-1px); /* leve elevación */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  &.mat-mdc-raised-button,
+  &[color='primary'],
+  .mat-primary {
+    &:hover {
+      background-color: #303f9f !important;
+      color: white !important;
+    }
+  }
+
+  &[color='warn'],
+  .mat-warn {
+    &:hover {
+      background-color: #d32f2f !important; /* rojo más oscuro */
+      color: white !important;
+    }
+  }
+
+  &.mat-mdc-button-base:not([color]) {
+    &:hover {
+      background-color: #f5f5f5 !important;
+      color: #424242 !important;
+    }
+  }
+}
+
+/* Combinado: Hover + Focus (para que se vea consistente) */
+.confirm-dialog-custom .mat-mdc-dialog-actions button:focus-visible,
+.mat-mdc-dialog-actions button:focus-visible {
+  outline: 4px solid #3f51b5 !important;
+  outline-offset: 5px !important;
+  box-shadow: 0 0 0 6px rgba(63, 81, 181, 0.3) !important;
+}
+
+::ng-deep {
+  .mat-mdc-checkbox-checked .mdc-checkbox__background {
+    background-color: #1152ac !important;
+    border-color: #1152ac !important;
+  }
+
+  .mat-mdc-checkbox .mdc-checkbox__checkmark {
+    color: white !important;
+  }
+}
+
+.mat-mdc-checkbox {
+  --mdc-checkbox-selected-checkmark-color: #3f4fb6 !important;
+  --mdc-checkbox-selected-icon-color: #3f4fb6 !important;
+  --mdc-checkbox-selected-focus-icon-color: #3f4fb6 !important;
+  --mdc-checkbox-selected-hover-icon-color: #3f4fb6 !important;
+  --mdc-checkbox-selected-pressed-icon-color: #3f4fb6 !important;
+
+  --mat-checkbox-checked-icon-color: #3f4fb6 !important;
+  --mat-checkbox-checked-ripple-color: #3f4fb6 !important;
+}
+
+/* Fondo del checkbox cuando está marcado */
+.mat-mdc-checkbox.mat-mdc-checkbox-checked .mdc-checkbox__background {
+  background-color: #3f4fb6 !important;
+  border-color: #3f4fb6 !important;
+}
+
+/* Palomita (checkmark) blanca dentro del checkbox marcado */
+.mat-mdc-checkbox.mat-mdc-checkbox-checked .mdc-checkbox__checkmark {
+  color: white !important;
+}
+
+/* Hover effect suave cuando está marcado */
+.mat-mdc-checkbox.mat-mdc-checkbox-checked:hover .mdc-checkbox__background::before {
+  background-color: rgba(17, 82, 172, 0.1) !important;
+}
+
+/* Para checkboxes en estado indeterminado (si los usas) */
+.mat-mdc-checkbox.mat-mdc-checkbox-indeterminate .mdc-checkbox__background {
+  background-color: #3f4fb6 !important;
+  border-color: #3f4fb6 !important;
+}
+
+.custom-visibility-action {
+  color: #3f51b5 !important;
+}
+
+.custom-delete-action {
+  color: #dc2626 !important;
+}
+
+.custom-edit-action {
+  color: #388e3c !important;
+}
+
+/* ═══════════════════════════════
+   TABLAS — SISTEMA JAEL (global)
+   ═══════════════════════════════ */
+
+.mat-mdc-table,
+.demo-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  border: 0.5px solid #e5e5e5;
+  overflow: hidden;
+}
+
+.mat-mdc-header-cell,
+.demo-table th {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.07em !important;
+  text-transform: uppercase !important;
+  color: #aaa !important;
+  border-bottom: 0.5px solid #eee !important;
+  padding: 10px 16px 10px 0 !important;
+  background: transparent !important;
+}
+
+.mat-mdc-cell,
+.demo-table td {
+  font-size: 13px !important;
+  color: #1a1a2e !important;
+  border-bottom: 0.5px solid #f5f5f5 !important;
+  padding: 12px 16px 12px 0 !important;
+  vertical-align: middle !important;
+}
+
+.mat-mdc-header-cell:first-of-type,
+.mat-mdc-cell:first-of-type,
+.demo-table th:first-child,
+.demo-table td:first-child {
+  padding-left: 16px !important;
+}
+
+.mat-mdc-row:last-child .mat-mdc-cell,
+.demo-table tr:last-child td {
+  border-bottom: none !important;
+}
+
+.mat-mdc-row:hover .mat-mdc-cell,
+.demo-table tr:hover td {
+  background: #f7f9fc !important;
+}
+
+.cell-amount {
+  font-weight: 700 !important;
+  font-size: 13px !important;
+}
+
+.cell-amount-green {
+  color: #1a7a4a !important;
+  font-weight: 700 !important;
+}
+.cell-amount-red {
+  color: #b91c1c !important;
+  font-weight: 700 !important;
+}
+.cell-amount-blue {
+  color: #1e3a6e !important;
+  font-weight: 700 !important;
+}
+
+.cell-ref {
+  color: #3730a3 !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+}
+
+.cell-muted {
+  font-size: 11px !important;
+  color: #aaa !important;
+}
+
+.cell-date {
+  font-size: 12px !important;
+  color: #888 !important;
+}
+
+.badge-warning {
+  background: #fff4e5;
+  color: #c2590a;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.badge-danger {
+  background: #fdf3f3;
+  color: #b91c1c;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.badge-success {
+  background: #eef9f4;
+  color: #1a7a4a;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.badge-info {
+  background: #eef3fb;
+  color: #1e3a6e;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+/* ═══════════════════════════════════
+   BOTONES DE ACCIÓN — global
+   ═══════════════════════════════════ */
+
+::ng-deep .table-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+::ng-deep .table-action-btn.mat-mdc-icon-button,
+::ng-deep .table-action-btn {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 50% !important;
+  border: 0.5px solid #e5e5e5 !important;
+  background: white !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  min-width: unset !important;
+  line-height: 1 !important;
+  transition:
+    background 0.15s,
+    border-color 0.15s !important;
+}
+
+::ng-deep .table-action-btn mat-icon,
+::ng-deep .table-action-btn .mat-icon {
+  width: 16px !important;
+  height: 16px !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+::ng-deep .table-action-btn .mat-mdc-button-ripple,
+::ng-deep .table-action-btn .mat-ripple {
+  display: none !important;
+}
+
+::ng-deep .table-action-btn.view {
+  color: #3730a3 !important;
+  border-color: #ddd !important;
+}
+::ng-deep .table-action-btn.view:hover {
+  background: #f0f0fb !important;
+  border-color: #c0bef5 !important;
+}
+
+::ng-deep .table-action-btn.approve {
+  color: #1a7a4a !important;
+  border-color: #c8e6c9 !important;
+}
+::ng-deep .table-action-btn.approve:hover {
+  background: #eef9f4 !important;
+  border-color: #a5d6a7 !important;
+}
+
+::ng-deep .table-action-btn.reject {
+  color: #b91c1c !important;
+  border-color: #fcd4d4 !important;
+}
+::ng-deep .table-action-btn.reject:hover {
+  background: #fdf3f3 !important;
+  border-color: #f5a5a5 !important;
+}
+
+::ng-deep .table-action-btn.edit {
+  color: #c2590a !important;
+  border-color: #f5dcc8 !important;
+}
+::ng-deep .table-action-btn.edit:hover {
+  background: #fff4e5 !important;
+  border-color: #f0c090 !important;
+}
+
+::ng-deep .table-action-btn.download {
+  color: #555 !important;
+  border-color: #e0e0e0 !important;
+}
+::ng-deep .table-action-btn.download:hover {
+  background: #f5f5f5 !important;
+  border-color: #ccc !important;
+}
+
+/* ═══════════════════════════════════
+   BOTÓN TRES PUNTOS + DROPDOWN — global
+   ═══════════════════════════════════ */
+
+::ng-deep .dots-btn.mat-mdc-icon-button {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 50% !important;
+  border: 0.5px solid #e5e5e5 !important;
+  background: white !important;
+  box-shadow: none !important;
+  min-width: unset !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #888 !important;
+  transition:
+    background 0.15s,
+    border-color 0.15s !important;
+}
+
+::ng-deep .dots-btn.mat-mdc-icon-button:hover {
+  background: #f5f5f7 !important;
+  border-color: #ccc !important;
+  color: #1a1a2e !important;
+}
+
+::ng-deep .dots-btn.mat-mdc-icon-button .mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  line-height: 1 !important;
+}
+
+::ng-deep .dots-btn .mat-mdc-button-ripple,
+::ng-deep .dots-btn .mat-ripple {
+  display: none !important;
+}
+
+::ng-deep .demo-dropdown {
+  border-radius: 10px !important;
+  border: 0.5px solid #e5e5e5 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+  overflow: hidden !important;
+  min-width: 165px !important;
+}
+
+::ng-deep .mat-mdc-menu-panel {
+  border-radius: 10px !important;
+}
+
+::ng-deep .demo-dropdown .mat-mdc-menu-panel {
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  min-width: 165px !important;
+}
+
+::ng-deep .demo-dropdown .mdc-list {
+  padding: 4px 0 !important;
+}
+
+::ng-deep .demo-dropdown .mat-mdc-menu-content {
+  border-radius: 10px !important;
+  padding: 4px 0 !important;
+}
+
+::ng-deep .demo-dropdown .mat-mdc-menu-item {
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: #1a1a2e !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 12px !important;
+}
+
+::ng-deep .demo-dropdown .mat-mdc-menu-item:hover {
+  background: #f5f5f7 !important;
+}
+
+::ng-deep .demo-dropdown .mat-mdc-menu-item .mat-icon,
+::ng-deep .demo-dropdown .mat-mdc-menu-item mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  line-height: 16px !important;
+  margin-right: 10px !important;
+  color: inherit !important;
+  vertical-align: middle !important;
+}
+
+::ng-deep .demo-dropdown .mat-mdc-menu-item:not([class*='menu-']) .mat-icon {
+  color: #3730a3 !important;
+}
+
+::ng-deep .demo-dropdown .mat-mdc-menu-item .mdc-list-item__primary-text {
+  font-size: 13px !important;
+  color: inherit !important;
+}
+
+::ng-deep .demo-dropdown mat-divider,
+::ng-deep .demo-dropdown .mat-divider {
+  margin: 3px 0 !important;
+  border-top-color: #eee !important;
+}
+
+::ng-deep .demo-dropdown .menu-approve {
+  color: #1a7a4a !important;
+}
+::ng-deep .demo-dropdown .menu-approve:hover {
+  background: #eef9f4 !important;
+}
+
+::ng-deep .demo-dropdown .menu-reject {
+  color: #b91c1c !important;
+}
+::ng-deep .demo-dropdown .menu-reject:hover {
+  background: #fdf3f3 !important;
+}
+
+::ng-deep .demo-dropdown .menu-edit {
+  color: #c2590a !important;
+}
+::ng-deep .demo-dropdown .menu-edit:hover {
+  background: #fff4e5 !important;
+}
+
+/* ═══════════════════════════════════
+   CDK OVERLAY — fix para sidenav con transform
+   ═══════════════════════════════════ */
+.cdk-overlay-container {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════
+   CONFIRM DIALOG — panel override
+   (sin ::ng-deep: es un stylesheet global,
+   selectores planos para garantizar specificity)
+   ═══════════════════════════════════ */
+
+.demo-dialog-panel {
+  /* Variable que usa Material internamente para border-radius del surface */
+  --mat-dialog-container-shape: 12px;
+}
+
+.demo-dialog-panel .mat-mdc-dialog-container {
+  padding: 0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12) !important;
+  overflow: hidden !important;
+}
+
+.demo-dialog-panel .mdc-dialog__container {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+.demo-dialog-panel .mdc-dialog__surface,
+.demo-dialog-panel .mat-mdc-dialog-surface {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Material pinta un ::before con border:2px transparent + border-radius:inherit
+   que deja ver las esquinas del contenedor por detrás del stripe superior */
+.demo-dialog-panel .mdc-dialog__surface::before,
+.demo-dialog-panel .mat-mdc-dialog-surface::before {
+  display: none !important;
+}
+
+/* ═══════════════════════════════════
+   TOAST — panel override (MatSnackBar)
+   (sin ::ng-deep: stylesheet global)
+   ═══════════════════════════════════ */
+
+.demo-toast-panel {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  /* Forzar posición bottom-right independientemente del CDK GlobalPositionStrategy */
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  top: auto !important;
+  left: auto !important;
+}
+
+.demo-toast-panel .mat-mdc-snack-bar-container {
+  background: transparent !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 10px !important;
+  padding: 0 !important;
+  min-width: unset !important;
+}
+
+.demo-toast-panel .mdc-snackbar__surface,
+.demo-toast-panel .mat-mdc-snackbar-surface {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 10px !important;
+  min-width: unset !important;
+}
+
+.demo-toast-panel .mat-mdc-snack-bar-label,
+.demo-toast-panel .mdc-snackbar__label {
+  padding: 0 !important;
+}
+
+/* ═══════════════════════════════
+   MODALES — Sistema
+   ═══════════════════════════════ */
+
+.modal-wrapper {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 90vh;
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 0.5px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.modal-subtitle {
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 2px;
+}
+
+.modal-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 0.5px solid #e5e5e5;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #888;
+  flex-shrink: 0;
+  padding: 0;
+  line-height: 1;
+
+  &:hover {
+    background: #f5f5f7;
+    color: #1a1a2e;
+  }
+}
+
+.modal-close mat-icon,
+.modal-close .mat-icon {
+  font-size: 12px !important;
+  width: 12px !important;
+  height: 12px !important;
+  line-height: 1 !important;
+}
+
+.modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-top: 0.5px solid #f0f0f0;
+  background: #f7f9fc;
+  flex-shrink: 0;
+}
+
+/* ── Fields grid ─────────────────────────── */
+.fields-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.fields-one-grip {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+
+  &.no-margin {
+    margin-bottom: 0;
+  }
+  &.full {
+    grid-column: span 2;
+  }
+}
+
+/* ── Label ───────────────────────────────── */
+.form-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #bbb;
+}
+
+/* ── Input ───────────────────────────────── */
+.form-input {
+  font-size: 13px;
+  color: #1a1a2e;
+  border: 0.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 9px 12px;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  background: white;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: #bbb;
+  }
+  &:focus {
+    border-color: #a0a0e8;
+    box-shadow: 0 0 0 3px rgba(55, 48, 163, 0.08);
+  }
+  &.error {
+    border-color: #f5a5a5;
+    background: #fff8f8;
+  }
+  &:disabled {
+    background: #f9f9f9;
+    color: #aaa;
+    cursor: not-allowed;
+  }
+}
+
+/* ── Textarea ────────────────────────────── */
+.form-textarea {
+  font-size: 13px;
+  color: #1a1a2e;
+  border: 0.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 9px 12px;
+  outline: none;
+  resize: none;
+  background: white;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  line-height: 1.5;
+
+  &::placeholder {
+    color: #bbb;
+  }
+  &:focus {
+    border-color: #a0a0e8;
+    box-shadow: 0 0 0 3px rgba(55, 48, 163, 0.08);
+  }
+  &:disabled {
+    background: #f9f9f9;
+    color: #aaa;
+    cursor: not-allowed;
+  }
+}
+
+/* ── Select nativo ───────────────────────── */
+.form-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-select {
+  width: 100%;
+  font-size: 13px;
+  color: #1a1a2e;
+  border: 0.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 9px 32px 9px 12px;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background: white;
+  cursor: pointer;
+  font-family: inherit;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: #a0a0e8;
+    box-shadow: 0 0 0 3px rgba(55, 48, 163, 0.08);
+  }
+  &:disabled {
+    background: #f9f9f9;
+    color: #aaa;
+    cursor: not-allowed;
+  }
+}
+
+.select-arrow {
+  position: absolute;
+  right: 10px;
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  color: #bbb;
+  pointer-events: none;
+  line-height: 1;
+}
+
+/* ── Error ───────────────────────────────── */
+.form-error {
+  font-size: 11px;
+  color: #b91c1c;
+}
+
+/* ── Sección con título ──────────────────── */
+.form-section {
+  margin-bottom: 12px;
+}
+
+.form-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 0.5px solid #f0f0f0;
+}
+
+/* ── Input con icono (password) ──────────── */
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .form-input {
+    padding-right: 40px;
+  }
+
+  .input-icon-btn {
+    position: absolute;
+    right: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: #888;
+    display: flex;
+    align-items: center;
+
+    &:hover {
+      color: #1a1a2e;
+    }
+  }
+}
+
+.input-icon-btn mat-icon,
+.input-icon-btn .mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  line-height: 1 !important;
+}
+
+/* ── Prefijo de monto ────────────────────── */
+.input-prefix-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .prefix-symbol {
+    position: absolute;
+    left: 12px;
+    font-size: 13px;
+    color: #888;
+    pointer-events: none;
+  }
+
+  .form-input {
+    padding-left: 22px;
+  }
+}
+
+/* ── mat-form-field dentro de modal (controles complejos) ── */
+.modal-body mat-form-field {
+  width: 100%;
+  --mat-form-field-container-height: 40px;
+  --mdc-outlined-text-field-container-shape: 8px;
+  margin-bottom: 20px;
+
+  .mat-mdc-form-field-infix { padding-top: 8px !important; padding-bottom: 8px !important; min-height: unset !important; }
+}
+
+.modal-body mat-form-field:has(textarea) {
+  .mat-mdc-form-field-infix { padding-top: 8px !important; padding-bottom: 8px !important; min-height: unset !important; }
+  textarea { min-height: 90px; line-height: 1.5; }
+}
+
+/* ── Botones ─────────────────────────────── */
+.btn-cancel {
+  height: 36px;
+  padding: 0 18px;
+  background: white;
+  color: #555;
+  border: 0.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+
+  &:hover {
+    background: #f5f5f5;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-save {
+  height: 36px;
+  padding: 0 20px;
+  background: #2F4499;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+  }
+  &:hover {
+    background: #1C2B5E;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

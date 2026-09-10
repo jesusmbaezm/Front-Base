@@ -1,0 +1,237 @@
+<section class="collections-report-page">
+  <header class="page-header">
+    <div>
+      <h1>Reporte de Cobranza</h1>
+      <p>Visibilidad de cartera, saldos vigentes y parcialidades por cliente.</p>
+    </div>
+
+    <div class="header-chip">
+      <span class="header-chip-value">{{ customerCount() }}</span>
+      <span class="header-chip-label">cliente(s) en cartera</span>
+    </div>
+  </header>
+
+  <mat-card class="filters-card">
+    <mat-card-content>
+      <div class="filters-toolbar">
+        <div class="filter-field">
+          <app-branch-select
+            label="Sucursal"
+            [showError]="false"
+            [value]="selectedBranchId()"
+            (valueChange)="onBranchChange($event)"
+          ></app-branch-select>
+        </div>
+
+        <div class="filters-actions">
+          <button
+            mat-stroked-button
+            class="pdf-export-btn"
+            [disabled]="isExporting()"
+            (click)="onExportPdf()"
+          >
+            @if (isExporting()) {
+              <mat-icon><mat-spinner diameter="18"></mat-spinner></mat-icon>
+            } @else {
+              <mat-icon>picture_as_pdf</mat-icon>
+            }
+            Exportar PDF
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  @if (isLoading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="42"></mat-spinner>
+      <p>Consultando cartera...</p>
+    </div>
+  } @else if (hasError()) {
+    <div class="empty-card">
+      <div class="empty-state error-state">
+        <mat-icon>error_outline</mat-icon>
+        <div>
+          <h2>No pudimos cargar el reporte</h2>
+          <p>Intenta nuevamente para recuperar la cartera actual.</p>
+        </div>
+        <app-button variant="primary" matIcon="refresh" (onClick)="loadReport()">
+          Reintentar
+        </app-button>
+      </div>
+    </div>
+  } @else if (reportData(); as data) {
+    <div class="kpi-grid">
+      <article class="kpi-card kpi-amount">
+        <div class="kpi-label">Monto total</div>
+        <div class="kpi-value">{{ totals().totalAmount | currency:'MXN':'symbol':'1.2-2' }}</div>
+        <p class="kpi-copy">Importe comprometido en remisiones a crédito.</p>
+      </article>
+
+      <article class="kpi-card kpi-balance">
+        <div class="kpi-label">Saldo pendiente</div>
+        <div class="kpi-value">{{ totals().totalBalance | currency:'MXN':'symbol':'1.2-2' }}</div>
+        <p class="kpi-copy">Saldo vivo por recuperar en cartera.</p>
+      </article>
+
+      <article class="kpi-card kpi-paid">
+        <div class="kpi-label">Pagado</div>
+        <div class="kpi-value">{{ totals().totalPaid | currency:'MXN':'symbol':'1.2-2' }}</div>
+        <p class="kpi-copy">Abonos acumulados registrados hasta el momento.</p>
+      </article>
+    </div>
+
+    <section class="report-shell">
+      <div class="report-shell-header">
+        <div>
+          <div class="report-shell-title">Detalle por cliente</div>
+          <p>
+            {{ customerCount() }} cliente(s) y {{ scheduleCount() }} parcialidad(es) encontradas.
+          </p>
+        </div>
+      </div>
+
+      @if (data.customers.length === 0) {
+        <div class="empty-inline">
+          <mat-icon>inventory_2</mat-icon>
+          <div>
+            <h2>Sin resultados para los filtros actuales</h2>
+            <p>No hay clientes con cobranza pendiente en esta consulta.</p>
+          </div>
+        </div>
+      } @else {
+        <div class="customer-stack">
+          @for (customer of data.customers; track trackCustomer($index, customer)) {
+            <article
+              class="customer-card"
+              [class.customer-card-open]="isCustomerExpanded(customer.customerId)"
+            >
+              <button
+                type="button"
+                class="customer-summary"
+                (click)="toggleCustomer(customer.customerId)"
+              >
+                <div class="customer-identity">
+                  <div class="customer-key">{{ customer.customerKey }}</div>
+                  <div class="customer-copy">
+                    <div class="customer-name">{{ customer.customerName }}</div>
+                    <div class="customer-meta">
+                      {{ customer.schedules.length }} parcialidad(es) por revisar
+                    </div>
+                  </div>
+                </div>
+
+                <div class="customer-totals">
+                  <div class="summary-pill">
+                    <span class="summary-label">Monto</span>
+                    <strong>{{ customer.totalAmount | currency:'MXN':'symbol':'1.2-2' }}</strong>
+                  </div>
+                  <div class="summary-pill accent-balance">
+                    <span class="summary-label">Saldo</span>
+                    <strong>{{ customer.totalBalance | currency:'MXN':'symbol':'1.2-2' }}</strong>
+                  </div>
+                  <div class="summary-pill accent-paid">
+                    <span class="summary-label">Pagado</span>
+                    <strong>{{ customer.totalPaid | currency:'MXN':'symbol':'1.2-2' }}</strong>
+                  </div>
+                  <div class="summary-chevron" [class.open]="isCustomerExpanded(customer.customerId)">
+                    <mat-icon>expand_more</mat-icon>
+                  </div>
+                </div>
+              </button>
+
+              @if (isCustomerExpanded(customer.customerId)) {
+                <div class="schedule-panel">
+                  <div class="schedule-table desktop-only">
+                    <div class="schedule-row schedule-head">
+                      <span>Remisión</span>
+                      <span>Fecha remisión</span>
+                      <span>Parcialidad</span>
+                      <span>Vencimiento</span>
+                      <span>Días vencidos</span>
+                      <span class="align-right">Monto</span>
+                      <span class="align-right">Saldo</span>
+                      <span class="align-right">Pagado</span>
+                    </div>
+
+                    @for (schedule of customer.schedules; track trackSchedule($index, schedule)) {
+                      <div class="schedule-row">
+                        <span class="folio-cell">{{ schedule.remissionFolio }}</span>
+                        <span>{{ formatRemissionDate(schedule.remissionDate) }}</span>
+                        <span>#{{ schedule.installmentNumber }}</span>
+                        <span>{{ formatDueDate(schedule.dueDate) }}</span>
+                        <span>
+                          <span
+                            class="aging-pill"
+                            [class]="getOverdueVariant(schedule.overdueDays)"
+                          >
+                            {{ schedule.overdueDays }}
+                          </span>
+                        </span>
+                        <span class="align-right">
+                          {{ schedule.amount | currency:'MXN':'symbol':'1.2-2' }}
+                        </span>
+                        <span class="align-right amount-balance">
+                          {{ schedule.balance | currency:'MXN':'symbol':'1.2-2' }}
+                        </span>
+                        <span class="align-right amount-paid">
+                          {{ schedule.paidAmount | currency:'MXN':'symbol':'1.2-2' }}
+                        </span>
+                      </div>
+                    }
+                  </div>
+
+                  <div class="schedule-mobile mobile-only">
+                    @for (schedule of customer.schedules; track trackSchedule($index, schedule)) {
+                      <article class="schedule-mobile-card">
+                        <div class="schedule-mobile-top">
+                          <div>
+                            <div class="mobile-folio">{{ schedule.remissionFolio }}</div>
+                            <div class="mobile-date">
+                              Remisión {{ formatRemissionDate(schedule.remissionDate) }}
+                            </div>
+                          </div>
+
+                          <span class="aging-pill" [class]="getOverdueVariant(schedule.overdueDays)">
+                            {{ schedule.overdueDays }} día(s)
+                          </span>
+                        </div>
+
+                        <div class="mobile-grid">
+                          <div>
+                            <span class="mobile-label">Parcialidad</span>
+                            <strong>#{{ schedule.installmentNumber }}</strong>
+                          </div>
+                          <div>
+                            <span class="mobile-label">Vencimiento</span>
+                            <strong>{{ formatDueDate(schedule.dueDate) }}</strong>
+                          </div>
+                          <div>
+                            <span class="mobile-label">Monto</span>
+                            <strong>{{ schedule.amount | currency:'MXN':'symbol':'1.2-2' }}</strong>
+                          </div>
+                          <div>
+                            <span class="mobile-label">Saldo</span>
+                            <strong class="amount-balance">
+                              {{ schedule.balance | currency:'MXN':'symbol':'1.2-2' }}
+                            </strong>
+                          </div>
+                          <div>
+                            <span class="mobile-label">Pagado</span>
+                            <strong class="amount-paid">
+                              {{ schedule.paidAmount | currency:'MXN':'symbol':'1.2-2' }}
+                            </strong>
+                          </div>
+                        </div>
+                      </article>
+                    }
+                  </div>
+                </div>
+              }
+            </article>
+          }
+        </div>
+      }
+    </section>
+  }
+</section>

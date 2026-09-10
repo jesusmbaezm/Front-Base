@@ -1,0 +1,415 @@
+<div class="page-content">
+
+  <!-- ─── List view ─────────────────────────────────────────── -->
+  @if (currentView() === 'list') {
+    <header class="page-header">
+      <div>
+        <h1>Recepciones Pendientes</h1>
+        <p>Gestión de recepciones de embarques</p>
+      </div>
+    </header>
+
+    <div class="metrics-strip">
+      <div class="metric">
+        <div class="metric-label">
+          <span class="metric-label-text">En tránsito</span>
+          <span class="metric-badge metric-badge-info">
+            <mat-icon>local_shipping</mat-icon>
+          </span>
+        </div>
+        <span class="metric-value metric-info">{{ countInTransit }}</span>
+      </div>
+      <div class="metric">
+        <div class="metric-label">
+          <span class="metric-label-text">Con incidencia</span>
+          <span class="metric-badge metric-badge-warning">
+            <mat-icon>warning</mat-icon>
+          </span>
+        </div>
+        <span class="metric-value metric-warning">{{ countWithIncident }}</span>
+      </div>
+      <div class="metric">
+        <div class="metric-label">
+          <span class="metric-label-text">Recibidos hoy</span>
+          <span class="metric-badge metric-badge-success">
+            <mat-icon>move_to_inbox</mat-icon>
+          </span>
+        </div>
+        <span class="metric-value metric-success">{{ countDeliveredToday }}</span>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <mat-card class="filters-card demo-card">
+      <mat-card-content>
+        <div class="filters-toolbar">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+            <mat-label>Buscar</mat-label>
+            <input
+              matInput
+              [value]="searchControl()"
+              (input)="searchControl.set($any($event.target).value); loadBackOrdes()"
+              placeholder="Folio, sucursal…"
+            />
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+
+          <app-branch-select
+            class="select-field"
+            [value]="selectedBranch()"
+            (valueChange)="selectedBranch.set($event); loadBackOrdes()"
+            [showError]="false"
+          ></app-branch-select>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="select-field">
+            <mat-label>Estatus</mat-label>
+            <mat-select
+              [value]="selectedStatus()"
+              (selectionChange)="selectedStatus.set($event.value); loadBackOrdes()"
+            >
+              <mat-option [value]="null">Todos</mat-option>
+              <mat-option [value]="1">En tránsito</mat-option>
+              <mat-option [value]="2">Recibida</mat-option>
+              <mat-option [value]="3">Recibida con incidencias</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <div class="filters-actions">
+            <app-button
+              variant="ghost"
+              matIcon="filter_alt_off"
+              [iconOnly]="true"
+              (onClick)="clearFilters()"
+              matTooltip="Limpiar filtros"
+            ></app-button>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Table card -->
+    <div class="tbl-card">
+      @if (isLoading()) {
+        <div class="loading-overlay">
+          <mat-spinner diameter="40"></mat-spinner>
+        </div>
+      }
+
+      <div class="table-container">
+        <table mat-table [dataSource]="filteredBackOrders" matSort>
+          <ng-container matColumnDef="folio">
+            <th mat-header-cell *matHeaderCellDef>Folio</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="folio-link" [class.folio-link-active]="row.status !== ReceptionStatus.Pendiente">{{ row.folio }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="branchName">
+            <th mat-header-cell *matHeaderCellDef>Sucursal destino</th>
+            <td mat-cell *matCellDef="let row">{{ row.branchName }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="shipmentFolio">
+            <th mat-header-cell *matHeaderCellDef>Embarque</th>
+            <td mat-cell *matCellDef="let row">
+              <div>{{ row.shipmentFolio }}</div>
+              <div class="cell-sub">Folio embarque</div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="products">
+            <th mat-header-cell *matHeaderCellDef>Productos</th>
+            <td mat-cell *matCellDef="let row">
+              <div>{{ row.lineCount }} SKU</div>
+              <div class="cell-sub">{{ row.totalShippedQuantity }} piezas</div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="sentAt">
+            <th mat-header-cell *matHeaderCellDef>Fecha envío</th>
+            <td mat-cell *matCellDef="let row" class="cell-date">
+              {{ row.createdAt | date: 'dd/MMM/yyyy HH:mm' }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="badge" [ngClass]="getStatusClass(row.status)">
+                <span class="bdot"></span>
+                {{ getStatusLabel(row.status, row.statusLabel) }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions" stickyEnd>
+            <th mat-header-cell *matHeaderCellDef class="actions-header">Acciones</th>
+            <td mat-cell *matCellDef="let row" (click)="$event.stopPropagation()">
+              <div class="row-actions">
+                @if (row.status === ReceptionStatus.Pendiente && canConfirmReception) {
+                  <button class="auth-btn send" (click)="onStartReception(row)" matTooltip="Iniciar recepción">
+                    <mat-icon fontSet="material-symbols-outlined" style="font-size:18px;width:18px;height:18px">box_add</mat-icon>
+                  </button>
+                } @else {
+                  <button class="auth-btn view" (click)="onStartReception(row)" matTooltip="Ver detalle">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                }
+              </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr
+            mat-row
+            *matRowDef="let row; columns: displayedColumns"
+            [class.clickable-row]="row.status !== ReceptionStatus.Pendiente"
+            [ngClass]="getRowClass(row.status)"
+            (click)="onRowClick(row)"
+          ></tr>
+
+          <tr class="empty-row" *matNoDataRow>
+            <td [attr.colspan]="displayedColumns.length">
+              <div class="empty-state">
+                <mat-icon>local_shipping</mat-icon>
+                <p>No se encontraron recepciones</p>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <app-paginator
+        [totalItems]="totalCount()"
+        [currentPage]="pageIndex() + 1"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="[10, 25, 50]"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-paginator>
+    </div>
+  }
+
+  <!-- ─── Detail view ───────────────────────────────────────── -->
+  @if (currentView() === 'detail') {
+    <div class="detail-header">
+      <button class="btn btn-ghost" (click)="onBack()">
+        <mat-icon>arrow_back</mat-icon>
+        Volver
+      </button>
+      <div>
+        <div class="detail-title-row">
+          <span class="page-title">Recepción {{ selectedShipment()?.folio }}</span>
+          <span class="badge badge-info">
+            <span class="bdot"></span>
+            En tránsito
+          </span>
+        </div>
+        <div class="detail-sub">
+          Embarque: {{ selectedShipment()?.shipmentFolio }} · Destino:
+          {{ selectedShipment()?.branchName }} ·
+          {{ selectedShipment()?.createdAt | date: 'dd MMM HH:mm' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Instruction banner -->
+    <div class="info-banner">
+      <mat-icon class="info-icon">info</mat-icon>
+      <span>
+        Captura la cantidad que recibes físicamente en cada producto. Si hay daños o faltantes,
+        anótalos en "Con incidencia" y adjunta evidencia fotográfica.
+      </span>
+    </div>
+
+    <!-- Capture table -->
+    <div class="card">
+      <div class="card-head">
+        <span class="section-label">Productos del embarque</span>
+        <span class="card-head-meta">
+          {{ selectedShipment()?.lineCount }} SKU ·
+          {{ selectedShipment()?.totalShippedQuantity }} piezas enviadas
+        </span>
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="th">Producto</th>
+            <th class="th">SKU</th>
+            <th class="th th-center">Enviado</th>
+            <th class="th th-center th-success">✓ Recibido</th>
+            <th class="th th-center th-danger">⚠ Con incidencia</th>
+            <th class="th">Evidencia</th>
+            <th class="th">Comentario</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of receptionLines; track item.id; let i = $index) {
+            <tr class="table-row" [ngClass]="getLineRowClass(item)">
+              <td class="td">
+                <div class="td-main">{{ item.productName }}</div>
+                <div class="td-sub">{{ item.variantDescription }}</div>
+              </td>
+
+              <td class="td td-mono td-small">{{ item.sku }}</td>
+
+              <td class="td td-center td-bold">{{ item.shippedQuantity }}</td>
+
+              <td class="td td-center">
+                <input
+                  type="number"
+                  class="qty-input"
+                  [ngClass]="getReceivedInputClass(item)"
+                  [(ngModel)]="item.receivedQuantity"
+                  min="0"
+                  (ngModelChange)="onQtyChange(item)"
+                />
+              </td>
+
+              <td class="td td-center">
+                <input
+                  type="number"
+                  class="qty-input"
+                  [ngClass]="getIncidentInputClass(item)"
+                  [(ngModel)]="item.incidentQuantity"
+                  min="0"
+                  (ngModelChange)="onQtyChange(item)"
+                />
+              </td>
+
+              <td class="td">
+                <button
+                  class="btn-photo"
+                  [ngClass]="{ 'btn-photo-active': (item.incidentDocuments?.length ?? 0) > 0 }"
+                  [disabled]="item.incidentQuantity === 0"
+                  (click)="onUploadPhoto(item)"
+                >
+                  <mat-icon>photo_camera</mat-icon>
+                  @if ((item.incidentDocuments?.length ?? 0) > 0) {
+                    <span>{{ item.incidentDocuments!.length }} foto(s)</span>
+                  } @else {
+                    <span>Foto</span>
+                  }
+                </button>
+              </td>
+
+              <td class="td">
+                <textarea
+                  class="comment-input"
+                  [(ngModel)]="item.lineComments"
+                  placeholder="Comentario…"
+                  rows="1"
+                  [required]="item.incidentQuantity > 0"
+                >
+                </textarea>
+              </td>
+            </tr>
+          }
+          @if (receptionLines.length === 0) {
+            <tr>
+              <td colspan="7">
+                <div class="empty-state">
+                  <mat-icon>inventory_2</mat-icon>
+                  <p>No hay líneas cargadas</p>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- Table footer totals -->
+      <div class="table-footer">
+        <div class="footer-totals">
+          <span class="total-item"
+            >Enviado: <strong>{{ totalSent }}</strong></span
+          >
+          <span class="total-item total-success"
+            >Recibido OK: <strong>{{ totalReceived }}</strong></span
+          >
+          <span class="total-item total-danger"
+            >Con incidencia: <strong>{{ totalIncident }}</strong></span
+          >
+          <span class="total-item total-muted"
+            >Sin capturar: <strong>{{ totalPending }}</strong></span
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary + confirm grid -->
+    <div class="confirm-grid">
+      <!-- Incidents summary -->
+      @if (hasIncidents) {
+        <div class="card">
+          <div class="card-head">
+            <span class="section-label">Incidencias detectadas</span>
+          </div>
+          <div class="card-body">
+            @for (inc of incidentLines; track inc.id) {
+              <div class="incident-item">
+                <div class="incident-name">
+                  {{ inc.productName }} · {{ inc.incidentQuantity }} piezas
+                </div>
+                <div class="incident-comment">{{ inc.incidentComments }}</div>
+                @if ((inc.incidentDocuments?.length ?? 0) > 0) {
+                  <div class="incident-photos">📷 {{ inc.incidentDocuments!.length }} foto(s) adjunta(s)</div>
+                }
+              </div>
+            }
+            <p class="incident-note">
+              Los productos con incidencia irán a
+              <strong>Stock con Incidencia</strong> — no disponibles para venta.
+            </p>
+          </div>
+        </div>
+      }
+      @if (!hasIncidents) {
+        <div></div>
+      }
+
+      <!-- Confirm card -->
+      <div class="card confirm-card">
+        <div class="card-head">
+          <span class="section-label">Confirmar entrega</span>
+        </div>
+        <div class="card-body">
+          <div class="confirm-rows">
+            <div class="confirm-row">
+              <span class="confirm-label">→ Stock disponible</span>
+              <span class="confirm-value confirm-value-success">+{{ totalReceived }} piezas</span>
+            </div>
+            <div class="confirm-row">
+              <span class="confirm-label">→ Stock con incidencia</span>
+              <span class="confirm-value confirm-value-warning">+{{ totalIncident }} piezas</span>
+            </div>
+            <div class="confirm-row">
+              <span class="confirm-label">→ Sin capturar</span>
+              <span class="confirm-value confirm-value-muted">{{ totalPending }} piezas</span>
+            </div>
+          </div>
+
+          @if (totalPending > 0) {
+            <div class="blocking-alert">
+              <mat-icon>warning</mat-icon>
+              Hay {{ totalPending }} piezas sin capturar. Completa todos los productos para
+              confirmar.
+            </div>
+          }
+
+          <button class="btn-confirm" [disabled]="!canConfirm" (click)="onConfirmReception()">
+            <mat-icon>check_circle</mat-icon>
+            Confirmar entrega
+          </button>
+
+          @if (!canConfirm) {
+            <p class="confirm-hint">Completa todos los campos para habilitar</p>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

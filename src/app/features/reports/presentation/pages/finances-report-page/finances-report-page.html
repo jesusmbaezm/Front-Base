@@ -1,0 +1,295 @@
+<section class="finances-report-page">
+  <header class="page-header">
+    <div>
+      <h1>Reporte de Finanzas</h1>
+      <p>Resumen financiero de ventas, gastos y comisiones</p>
+    </div>
+  </header>
+
+  <!-- Filtros -->
+  <mat-card class="filters-card">
+    <mat-card-content>
+      <div class="filters-toolbar">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="select-field">
+          <mat-label>Sucursal</mat-label>
+          <mat-select [value]="selectedBranchId()" (selectionChange)="onBranchChange($event.value)">
+            @for (branch of branches(); track branch.id) {
+              <mat-option [value]="branch.id">{{ branch.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="select-field">
+          <mat-label>Periodo</mat-label>
+          <mat-select
+            [disabled]="selectedBranchId() == null"
+            [value]="selectedPeriodId() ?? 0"
+            (selectionChange)="onPeriodChange($event.value)"
+          >
+            <mat-option [value]="0">Todos</mat-option>
+            @for (period of periods(); track period.id) {
+              <mat-option [value]="period.id">
+                {{ (period.openedAt | date:'MMM/yyyy') + ' — ' + period.statusLabel }}
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <div class="filters-actions">
+          <button class="btn-filter-primary" (click)="onSearch()">
+            <mat-icon>search</mat-icon>
+            <span>Buscar</span>
+          </button>
+          <button class="btn-filter-ghost" matTooltip="Limpiar filtros" (click)="onClearFilters()">
+            <span>Limpiar</span>
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  @if (isLoading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  } @else if (hasError()) {
+    <div class="empty-card">
+      <div class="empty-state error-state">
+        <mat-icon>error_outline</mat-icon>
+        <p>Error al cargar los datos. Por favor intenta de nuevo.</p>
+        <button class="btn-filter-primary" (click)="loadReport()">
+          <mat-icon>refresh</mat-icon>
+          <span>Reintentar</span>
+        </button>
+      </div>
+    </div>
+  } @else if (reportData(); as data) {
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+
+      <div class="kpi-card kpi-green">
+        <div class="kpi-label">Ingresos Totales</div>
+        <div class="kpi-val kv-green">{{ data.totalIncome | currency:'MXN':'symbol':'1.2-2' }}</div>
+        <div class="kpi-sub">{{ data.cashSalesCount }} venta(s) contado · {{ data.paymentsCount }} abono(s)</div>
+      </div>
+
+      <div class="kpi-card kpi-red">
+        <div class="kpi-label">Gastos Totales</div>
+        <div class="kpi-val kv-red">{{ data.totalExpenses | currency:'MXN':'symbol':'1.2-2' }}</div>
+        <div class="kpi-sub">{{ totalExpenseCount() }} gasto(s) registrado(s)</div>
+      </div>
+
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-label">Margen</div>
+        <div class="kpi-val kv-blue">{{ data.margin | currency:'MXN':'symbol':'1.2-2' }}</div>
+        <div class="kpi-sub">{{ marginPercent() }}% de ingresos</div>
+      </div>
+
+      <div class="kpi-card kpi-amber">
+        <div class="kpi-label">Saldo Pendiente</div>
+        <div class="kpi-val kv-amber">{{ data.outstandingBalance | currency:'MXN':'symbol':'1.2-2' }}</div>
+        <div class="kpi-sub">Por cobrar (cartera activa)</div>
+      </div>
+
+      <div class="kpi-card kpi-green">
+        <div class="kpi-label">Comisiones Pagadas</div>
+        <div class="kpi-val kv-green">{{ data.totalCommissionsPaid | currency:'MXN':'symbol':'1.2-2' }}</div>
+        <div class="kpi-sub">Liquidadas en el periodo</div>
+      </div>
+
+      <div class="kpi-card kpi-amber">
+        <div class="kpi-label">Comisiones Pendientes</div>
+        <div class="kpi-val kv-amber">{{ data.totalCommissionsPending | currency:'MXN':'symbol':'1.2-2' }}</div>
+        <div class="kpi-sub">Por liquidar</div>
+      </div>
+
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-card">
+
+      <div class="tabs-nav">
+        <div class="tab" [class.active]="activeTab() === 'efectivo'" (click)="setTab('efectivo')">
+          <mat-icon>payments</mat-icon>
+          Contado
+          <span class="tab-amount">{{ data.totalCashSales | currency:'MXN':'symbol':'1.2-2' }}</span>
+        </div>
+        <div class="tab" [class.active]="activeTab() === 'credito'" (click)="setTab('credito')">
+          <mat-icon>credit_card</mat-icon>
+          Crédito
+          <span class="tab-amount">{{ data.totalCreditSales | currency:'MXN':'symbol':'1.2-2' }}</span>
+        </div>
+        <div class="tab" [class.active]="activeTab() === 'abonos'" (click)="setTab('abonos')">
+          <mat-icon>account_balance_wallet</mat-icon>
+          Abonos
+          <span class="tab-amount">{{ data.totalAccountsReceivablePayments | currency:'MXN':'symbol':'1.2-2' }}</span>
+        </div>
+        <div class="tab" [class.active]="activeTab() === 'gastos'" (click)="setTab('gastos')">
+          <mat-icon>receipt_long</mat-icon>
+          Gastos por Categoría
+          <span class="tab-amount">{{ data.totalExpenses | currency:'MXN':'symbol':'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <div class="tab-body">
+
+        <!-- Efectivo -->
+        @if (activeTab() === 'efectivo') {
+          <div class="tab-header">
+            <div class="tab-header-title">Ventas al Contado</div>
+            <div class="tab-header-meta">
+              <span class="tab-header-count">{{ data.cashSalesCount }} remisión(es)</span>
+              <span class="tab-header-total amt-green">{{ data.totalCashSales | currency:'MXN':'symbol':'1.2-2' }}</span>
+            </div>
+          </div>
+          @if (data.cashSales.length === 0) {
+            <div class="empty-tab">Sin remisiones en este periodo</div>
+          }
+          @for (sale of cashSalesPaged(); track sale.id) {
+            <a class="remision-row remision-link"
+               [routerLink]="['/sales/remissions', sale.id]"
+               target="_blank"
+               rel="noopener">
+              <div>
+                <div class="rem-folio">{{ sale.folio }}</div>
+                <div class="rem-meta">{{ sale.customerName }} · {{ formatDate(sale.createdAt) }}</div>
+              </div>
+              <div class="rem-amount amt-green">{{ sale.total | currency:'MXN':'symbol':'1.2-2' }}</div>
+            </a>
+          }
+          @if (data.cashSales.length > pageSize) {
+            <div class="pager">
+              <button class="pager-btn" (click)="goPage('cash', -1, data.cashSales.length)" [disabled]="cashPage() === 1">
+                <mat-icon>chevron_left</mat-icon>
+              </button>
+              <span class="pager-info">Página {{ cashPage() }} de {{ totalPages(data.cashSales.length) }}</span>
+              <button class="pager-btn" (click)="goPage('cash', 1, data.cashSales.length)" [disabled]="cashPage() >= totalPages(data.cashSales.length)">
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </div>
+          }
+        }
+
+        <!-- Crédito -->
+        @if (activeTab() === 'credito') {
+          <div class="tab-header">
+            <div class="tab-header-title">Ventas a Crédito</div>
+            <div class="tab-header-meta">
+              <span class="tab-header-count">{{ data.creditSalesCount }} remisión(es)</span>
+              <span class="tab-header-total amt-amber">{{ data.totalCreditSales | currency:'MXN':'symbol':'1.2-2' }}</span>
+            </div>
+          </div>
+          @if (data.creditSales.length === 0) {
+            <div class="empty-tab">Sin remisiones a crédito en este periodo</div>
+          }
+          @for (sale of creditSalesPaged(); track sale.id) {
+            <a class="remision-row remision-link"
+               [routerLink]="['/sales/remissions', sale.id]"
+               target="_blank"
+               rel="noopener">
+              <div>
+                <div class="rem-folio">{{ sale.folio }}</div>
+                <div class="rem-meta">{{ sale.customerName }} · {{ formatDate(sale.createdAt) }}</div>
+              </div>
+              <div class="rem-amount amt-amber">{{ sale.total | currency:'MXN':'symbol':'1.2-2' }}</div>
+            </a>
+          }
+          @if (data.creditSales.length > pageSize) {
+            <div class="pager">
+              <button class="pager-btn" (click)="goPage('credit', -1, data.creditSales.length)" [disabled]="creditPage() === 1">
+                <mat-icon>chevron_left</mat-icon>
+              </button>
+              <span class="pager-info">Página {{ creditPage() }} de {{ totalPages(data.creditSales.length) }}</span>
+              <button class="pager-btn" (click)="goPage('credit', 1, data.creditSales.length)" [disabled]="creditPage() >= totalPages(data.creditSales.length)">
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </div>
+          }
+        }
+
+        <!-- Abonos -->
+        @if (activeTab() === 'abonos') {
+          <div class="tab-header">
+            <div class="tab-header-title">Abonos Recibidos</div>
+            <div class="tab-header-meta">
+              <span class="tab-header-count">{{ data.paymentsCount }} abono(s)</span>
+              <span class="tab-header-total amt-green">{{ data.totalAccountsReceivablePayments | currency:'MXN':'symbol':'1.2-2' }}</span>
+            </div>
+          </div>
+          @if (data.payments.length === 0) {
+            <div class="empty-tab">Sin abonos registrados en este periodo</div>
+          }
+          @for (p of paymentsPaged(); track p.id) {
+            <div class="remision-row">
+              <div>
+                <div class="rem-folio">{{ p.folio }}</div>
+                <div class="rem-meta">{{ p.customerName }} · {{ formatDate(p.paidAt) }}</div>
+              </div>
+              <div class="rem-amount amt-green">{{ p.appliedAmount | currency:'MXN':'symbol':'1.2-2' }}</div>
+            </div>
+          }
+          @if (data.payments.length > pageSize) {
+            <div class="pager">
+              <button class="pager-btn" (click)="goPage('payments', -1, data.payments.length)" [disabled]="paymentsPage() === 1">
+                <mat-icon>chevron_left</mat-icon>
+              </button>
+              <span class="pager-info">Página {{ paymentsPage() }} de {{ totalPages(data.payments.length) }}</span>
+              <button class="pager-btn" (click)="goPage('payments', 1, data.payments.length)" [disabled]="paymentsPage() >= totalPages(data.payments.length)">
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </div>
+          }
+        }
+
+        <!-- Gastos por categoría -->
+        @if (activeTab() === 'gastos') {
+          <div class="tab-header">
+            <div class="tab-header-title">Gastos por Categoría</div>
+            <div class="tab-header-meta">
+              <span class="tab-header-count">{{ totalExpenseCount() }} gasto(s)</span>
+              <span class="tab-header-total amt-red">{{ data.totalExpenses | currency:'MXN':'symbol':'1.2-2' }}</span>
+            </div>
+          </div>
+          @if (expensesWithPercentage().length === 0) {
+            <div class="empty-tab">Sin gastos registrados en este periodo</div>
+          }
+          @for (g of expensesPaged(); track g.categoryId) {
+            <div class="gasto-row">
+              <div class="gasto-info">
+                <div class="gasto-cat">{{ g.categoryName }}</div>
+                <div class="gasto-count">{{ g.count }} gasto(s)</div>
+              </div>
+              <div class="gasto-bar-wrap">
+                <div class="gasto-bar">
+                  <div class="gasto-bar-fill" [style.width]="g.percentage + '%'"></div>
+                </div>
+              </div>
+              <div class="gasto-amount">{{ g.total | currency:'MXN':'symbol':'1.2-2' }}</div>
+            </div>
+          }
+          @if (expensesWithPercentage().length > pageSize) {
+            <div class="pager">
+              <button class="pager-btn" (click)="goPage('expenses', -1, expensesWithPercentage().length)" [disabled]="expensesPage() === 1">
+                <mat-icon>chevron_left</mat-icon>
+              </button>
+              <span class="pager-info">Página {{ expensesPage() }} de {{ totalPages(expensesWithPercentage().length) }}</span>
+              <button class="pager-btn" (click)="goPage('expenses', 1, expensesWithPercentage().length)" [disabled]="expensesPage() >= totalPages(expensesWithPercentage().length)">
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </div>
+          }
+        }
+
+      </div>
+    </div>
+
+  } @else {
+    <div class="empty-card">
+      <div class="empty-state">
+        <mat-icon>account_balance</mat-icon>
+        <p>Selecciona una sucursal para ver el reporte</p>
+      </div>
+    </div>
+  }
+</section>

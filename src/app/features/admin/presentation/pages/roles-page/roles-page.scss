@@ -1,0 +1,122 @@
+.roles-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h1 { margin: 0; font-size: 24px; font-weight: 500; }
+  p  { margin: 4px 0 0; color: #666; font-size: 14px; }
+
+  &__actions { display: flex; gap: 8px; }
+}
+
+/* ── Tabla ─────────────────── */
+.tbl-card {
+  background: white;
+  border: 0.5px solid #e5e5e5;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.table-container { overflow-x: auto; }
+
+table { width: 100%; background: transparent; }
+
+::ng-deep .mat-mdc-row:hover .mat-mdc-cell { background: transparent !important; }
+
+.actions-header { width: 112px; }
+
+/* ── Role cell ──────────────── */
+.role-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.role-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.badge-system {
+  background: #fff4e5;
+  color: #c2590a;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+/* ── Description ────────────── */
+.role-desc {
+  font-size: 12px;
+  color: #888;
+}
+
+/* ── Permission count ────────── */
+.perm-count {
+  font-size: 12px;
+  color: #555;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.perm-count-num {
+  font-size: 13px;
+  font-weight: 700;
+  color: #3730a3;
+}
+
+/* ── Empty state ─────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: #aaa;
+
+  mat-icon { font-size: 48px; width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5; }
+  p { margin: 0; font-size: 13px; }
+}
+
+.empty-row {
+  cursor: default;
+
+  &:hover {
+    background: transparent !important;
+  }
+
+  td {
+    cursor: default;
+    background: transparent !important;
+  }
+}
+
+.row-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}

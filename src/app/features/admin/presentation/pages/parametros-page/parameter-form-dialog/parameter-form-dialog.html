@@ -1,0 +1,41 @@
+<div class="modal-wrapper">
+  <!-- Header -->
+  <div class="modal-header">
+    <div>
+      <div class="modal-title">{{ isEdit ? 'Editar parámetro' : 'Nuevo parámetro' }}</div>
+    </div>
+    <button class="modal-close" type="button" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Body -->
+  <div class="modal-body">
+    <form [formGroup]="form">
+      <div class="fields-one-grip">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="form-field no-margin">
+          <mat-label>Parámetro</mat-label>
+          <input matInput class="form-input" formControlName="name" placeholder="Ej: Nombre del parámetro" [disabled]="true">
+        </mat-form-field>
+      </div>
+      <div class="fields-one-grip">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="form-field no-margin">
+          <mat-label>Valor</mat-label>
+          <input matInput class="form-input" formControlName="value" placeholder="Ej: Valor" [disabled]="true">
+          @if (form.get('value')?.hasError('required') && form.get('value')?.touched) {
+            <mat-error class="form-error">El valor es requerido</mat-error>
+          }
+        </mat-form-field>
+      </div>
+    </form>
+  </div>
+
+  <!-- Footer -->
+  <app-modal-footer
+    [isSubmitting]="isSubmitting()"
+    [saveLabel]="'Guardar cambios'"
+    [saveDisabled]="form.invalid"
+    (cancel)="onCancel()"
+    (save)="onSave()">
+  </app-modal-footer>
+</div>

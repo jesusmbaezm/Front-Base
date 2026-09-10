@@ -1,0 +1,170 @@
+// Layout
+.page-content {
+  padding: 16px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+// Header
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h1 { margin: 0; font-size: 24px; font-weight: 500; }
+  p  { margin: 4px 0 0; color: #666; font-size: 14px; }
+
+  &__actions { display: flex; gap: 8px; }
+}
+
+// Filters
+.filters-card {
+  border-radius: 12px;
+  mat-card-content { padding: 16px !important; }
+}
+
+.filters-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+
+  .search-field,
+  .select-field,
+  app-branch-select { flex: 1 1 0; min-width: 0; }
+
+  .search-field,
+  .select-field,
+  app-branch-select {
+    --mat-form-field-container-height: 40px;
+    --mdc-outlined-text-field-container-shape: 8px;
+
+    ::ng-deep .mat-mdc-form-field-infix { padding-top: 8px !important; padding-bottom: 8px !important; min-height: unset !important; }
+    ::ng-deep .mat-mdc-text-field-wrapper { padding: 0 12px !important; }
+    ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none !important; }
+  }
+}
+
+.filters-actions { display: flex; gap: 8px; align-items: center; }
+
+// Table card
+.tbl-card {
+  background: white;
+  border: 0.5px solid #e5e5e5;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.loading-inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.table-container { overflow-x: auto; }
+
+table { width: 100%; background: transparent; }
+
+::ng-deep .mat-mdc-row:hover .mat-mdc-cell { background: transparent !important; }
+
+.actions-header { width: 80px; }
+
+.col-center { text-align: center !important; }
+
+// Product cell
+.product-variant-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .product-name { font-weight: 500; color: #333; }
+
+  .variant-info {
+    color: #666;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .sku-code { font-family: 'Roboto Mono', monospace; font-size: 11px; color: #1565c0; font-weight: 500; }
+  }
+}
+
+.input-quantity {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  ::ng-deep .mat-mdc-form-field-infix { padding-top: 6px !important; padding-bottom: 6px !important; min-height: unset !important; }
+  ::ng-deep .mat-mdc-text-field-wrapper { padding: 0 8px !important; }
+  ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none !important; }
+}
+
+.field-quantity {
+  width: 72px;
+  --mat-form-field-container-height: 32px;
+  --mdc-outlined-text-field-container-shape: 6px;
+  font-size: 13px;
+
+  ::ng-deep input {
+    text-align: center !important;
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    -moz-appearance: textfield;
+  }
+}
+
+// Category group row
+.category-group-row {
+  background: #eef2f8 !important;
+  height: 36px !important;
+  cursor: pointer;
+
+  &:hover td { background: #eef2f8 !important; }
+}
+
+.category-group-cell {
+  padding: 0 16px !important;
+  border-bottom: 2px solid white !important;
+}
+
+.category-group-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.category-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #1B2A4A;
+}
+
+.category-expand-icon {
+  color: #1B2A4A;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  line-height: 18px;
+  transition: transform 0.2s ease;
+
+  &.collapsed { transform: rotate(-90deg); }
+}
+
+// Empty state
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: #aaa;
+
+  mat-icon { font-size: 48px; width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5; }
+  p { margin: 0; font-size: 13px; }
+}

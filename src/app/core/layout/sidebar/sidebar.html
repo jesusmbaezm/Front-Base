@@ -1,0 +1,49 @@
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-text">
+      <div class="logo-name">JAEL</div>
+      <div class="logo-sub">Distribuciones</div>
+    </div>
+  </div>
+
+  <div class="sidebar-nav">
+    @for (module of visibleModules; track module.label) {
+      @if (module.children.length === 1 && !module.forceGroup) {
+        <a
+          class="nav-item"
+          [routerLink]="module.children[0].route"
+          [class.active]="isChildActive(module, module.children[0])"
+        >
+          <mat-icon class="nav-icon">{{ module.icon }}</mat-icon>
+          <span class="nav-label">{{ module.label }}</span>
+        </a>
+      } @else {
+        <div
+          class="nav-item"
+          [class.open]="openGroups[module.label]"
+          [class.active]="isGroupActive(module) && !openGroups[module.label]"
+          (click)="toggleGroup(module.label)"
+        >
+          <mat-icon class="nav-icon">{{ module.icon }}</mat-icon>
+          <span class="nav-label">{{ module.label }}</span>
+          <mat-icon class="nav-chevron">chevron_right</mat-icon>
+        </div>
+
+        @if (openGroups[module.label]) {
+          <div class="nav-sub">
+            @for (child of module.children; track child.route) {
+              <a
+                class="nav-sub-item"
+                [routerLink]="child.route"
+                [class.active]="isChildActive(module, child)"
+              >
+                <div class="sub-dot"></div>
+                <span>{{ child.label }}</span>
+              </a>
+            }
+          </div>
+        }
+      }
+    }
+  </div>
+</div>

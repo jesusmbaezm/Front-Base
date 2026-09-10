@@ -1,0 +1,79 @@
+:host {
+  display: block;
+}
+
+.shell-toolbar {
+  height: 56px;
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: #ffffff;
+  color: #111827;
+}
+
+.toolbar-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.toolbar-spacer {
+  flex: 1;
+}
+
+// ── Derecha ───────────────────────────────────────────────────────────────────
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar-user-info {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}
+
+.topbar-user-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a1a2e;
+  line-height: 1;
+}
+
+.topbar-user-role {
+  font-size: 10px;
+  color: #aaa;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.topbar-sep {
+  width: 0.5px;
+  height: 20px;
+  background: #e5e5e5;
+}
+
+.topbar-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 0.5px solid #e5e5e5;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #888;
+
+  mat-icon {
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  &:hover {
+    background: #fdf3f3;
+    color: #b91c1c;
+    border-color: #fcd4d4;
+  }
+}

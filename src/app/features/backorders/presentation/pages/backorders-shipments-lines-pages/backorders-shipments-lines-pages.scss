@@ -1,0 +1,80 @@
+.users-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    h2 { margin: 0; font-size: 20px; font-weight: 500; }
+    p  { margin: 4px 0 0; color: #666; font-size: 14px; }
+  }
+}
+
+/* â”€â”€ Header card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.filters-card {
+  border-radius: 20px;
+  mat-card-content { padding: 16px !important; }
+}
+
+/* â”€â”€ Tabla card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.table-card {
+  background: white;
+  border: 0.5px solid #e5e5e5;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.table-container { overflow-x: auto; padding: 16px; }
+
+table { width: 100%; background: transparent; }
+
+
+::ng-deep .mat-mdc-row:hover .mat-mdc-cell { background: transparent !important; }
+
+/* â”€â”€ Celda producto â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.product-variant-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  .product-name { font-weight: 500; color: #333; }
+
+  .variant-info {
+    color: #666;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .sku-code { font-family: 'Roboto Mono', monospace; font-size: 11px; color: #1565c0; font-weight: 500; }
+  }
+}
+
+.input-quantity { margin-top: 10px; margin-bottom: -10px; }
+
+.field-quantity { width: 100px; }
+
+.full-width { width: 100%; }
+
+/* â”€â”€ Empty state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: #aaa;
+
+  mat-icon { font-size: 48px; width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5; }
+  p { margin: 0; font-size: 13px; }
+}

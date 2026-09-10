@@ -1,0 +1,41 @@
+<div class="session-modal">
+
+  <!-- Ícono -->
+  <div class="session-icon">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+        stroke="#F5A623" stroke-width="1.8"
+        stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <!-- Texto -->
+  <div class="session-text">
+    <h2 class="session-title">Tu sesión está por expirar</h2>
+    <p class="session-subtitle">La sesión se cerrará automáticamente en</p>
+  </div>
+
+  <!-- Countdown + barra -->
+  <div class="session-countdown">
+    <span class="countdown-time">{{ timeLeft | sessionTime }}</span>
+    <div class="countdown-bar">
+      <div class="countdown-fill" [style.width.%]="progressPct"></div>
+    </div>
+    <span class="countdown-total">de {{ sessionDuration | sessionTime }} minutos</span>
+  </div>
+
+  <!-- Acciones -->
+  <div class="session-actions">
+    <button class="btn-continue" (click)="onContinue()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+        <path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+          stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Continuar sesión
+    </button>
+    <button class="btn-logout" (click)="onLogout()">
+      Cerrar sesión
+    </button>
+  </div>
+
+</div>

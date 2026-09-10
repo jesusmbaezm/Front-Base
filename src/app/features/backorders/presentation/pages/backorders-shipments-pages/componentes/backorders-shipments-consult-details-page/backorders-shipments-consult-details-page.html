@@ -1,0 +1,190 @@
+<div class="page-content">
+
+  <!-- ─── Header ─────────────────────────────────────── -->
+  <header class="page-header">
+    <div class="header-left">
+      <button mat-icon-button (click)="goBack()" matTooltip="Volver">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="title-block">
+        <div class="title-row">
+          <h1>Detalle de embarque</h1>
+          @if (form?.value?.status) {
+            <span class="badge" [ngClass]="getStatusClass()">
+              <span class="bdot"></span>
+              {{ form?.value?.status }}
+            </span>
+          }
+        </div>
+        <div class="header-subtitle">
+          <span class="folio">{{ form?.value?.folio }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      @if (form?.value?.attachedDocumentId) {
+        <button class="btn-stroked" (click)="onDownload(form.value.attachedDocumentName)" [matTooltip]="form?.value?.attachedDocumentName">
+          <mat-icon>download</mat-icon>
+          {{ truncateFilename(form?.value?.attachedDocumentName) }}
+        </button>
+      }
+      <button class="btn-pdf" (click)="openPdfDialog()" matTooltip="Imprimir relación para el transportista">
+        <mat-icon>print</mat-icon>
+        Imprimir
+      </button>
+      @if (shipmentStatus() === 1) {
+        <app-button *appHasPermission="Permissions.supply.shipment.update" variant="ghost" matIcon="edit" (onClick)="goEdit()">Editar</app-button>
+      }
+    </div>
+  </header>
+
+  @if (!isLoading()) {
+    <div class="skeleton-wrapper">
+      <div class="skeleton-card">
+        <div class="skeleton-bar sk-w30 sk-h12"></div>
+        <div class="skeleton-grid">
+          @for (i of [1,2,3,4,5,6]; track i) {
+            <div class="skeleton-bar sk-h12"></div>
+          }
+        </div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton-bar sk-w20 sk-h12"></div>
+        @for (i of [1,2,3]; track i) {
+          <div class="skeleton-row">
+            <div class="skeleton-bar sk-w50 sk-h12"></div>
+            <div class="skeleton-bar sk-w15 sk-h12"></div>
+            <div class="skeleton-bar sk-w15 sk-h12"></div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (isLoading()) {
+    <!-- ─── Info card ─────────────────────────────────── -->
+    <div class="info-card demo-card">
+      <div class="section-label">Información de transporte</div>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Sucursal origen</span>
+          <span class="info-val info-val-row">
+            {{ form.value.originBranchName || '—' }}
+            <span class="badge-matriz">Matriz</span>
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Proveedor de transporte</span>
+          <span class="info-val">{{ form.value.transportProvider || '—' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Placa del vehículo</span>
+          <span class="info-val">{{ form.value.vehiclePlate || '—' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Conductor</span>
+          <span class="info-val">{{ form.value.driverName || '—' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">No. Licencia</span>
+          <span class="info-val">{{ form.value.driverLicenseNumber || '—' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Teléfono conductor</span>
+          <span class="info-val">{{ form.value.driverPhone || '—' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Fecha de creación</span>
+          <span class="info-val">{{ form.value.createdAt | date:'dd/MMM/yyyy HH:mm' }}</span>
+        </div>
+        @if (form.value.shippedAt) {
+          <div class="info-item">
+            <span class="info-label">Fecha de envío</span>
+            <span class="info-val">{{ form.value.shippedAt | date:'dd/MMM/yyyy HH:mm' }}</span>
+          </div>
+        }
+        @if (form.value.shippedByUserName) {
+          <div class="info-item">
+            <span class="info-label">Enviado por</span>
+            <span class="info-val">{{ form.value.shippedByUserName }}</span>
+          </div>
+        }
+        @if (form.value.deliveredAt) {
+          <div class="info-item">
+            <span class="info-label">Fecha de entrega</span>
+            <span class="info-val">{{ form.value.deliveredAt | date:'dd/MMM/yyyy HH:mm' }}</span>
+          </div>
+        }
+        @if (form.value.comments) {
+          <div class="info-item info-item-wide">
+            <span class="info-label">Comentarios</span>
+            <span class="info-val">{{ form.value.comments }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ─── Branch tables ─────────────────────────────── -->
+    @for (branch of Listbranches(); track branch.branchId) {
+      <div class="tbl-card">
+        <div class="tbl-branch-header">
+          <mat-icon class="branch-icon">store</mat-icon>
+          <span class="branch-name">{{ branch.branchName }}</span>
+          <span class="branch-count">{{ branch.lines.length }} producto{{ branch.lines.length !== 1 ? 's' : '' }}</span>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th class="th">Producto</th>
+                <th class="th th-center">Disponible matriz</th>
+                <th class="th th-center">Cantidad solicitada</th>
+                <th class="th th-center">{{ shipmentStatus() === 1 ? 'Cantidad a enviar' : 'Cantidad enviada' }}</th>
+                <th class="th">Comentarios</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of branch.lines; track $index) {
+                <tr class="table-row">
+                  <td class="td">
+                    <div class="product-name">{{ item.productName }}</div>
+                    <div class="product-sub">
+                      {{ item.variantDescription }}
+                      <span class="sku-code">({{ item.sku }})</span>
+                    </div>
+                  </td>
+                  <td class="td td-center">{{ item.originAvailableQuantity }}</td>
+                  <td class="td td-center">{{ item.backorderPendingQuantity }}</td>
+                  <td class="td td-center td-bold">{{ item.quantity }}</td>
+                  <td class="td td-muted">{{ item.lineComments || '—' }}</td>
+                </tr>
+              }
+              @if (branch.lines.length === 0) {
+                <tr>
+                  <td colspan="5">
+                    <div class="empty-state">
+                      <mat-icon>inventory_2</mat-icon>
+                      <p>Sin productos</p>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    @if (Listbranches().length === 0) {
+      <div class="tbl-card">
+        <div class="empty-state">
+          <mat-icon>directions_boat</mat-icon>
+          <p>No hay sucursales en este embarque</p>
+        </div>
+      </div>
+    }
+  }
+
+</div>

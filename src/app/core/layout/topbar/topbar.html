@@ -1,0 +1,23 @@
+<mat-toolbar class="shell-toolbar">
+  <button mat-icon-button type="button" (click)="menuClick.emit()">
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <span class="toolbar-title">{{ title }}</span>
+
+  <span class="toolbar-spacer"></span>
+
+  <div class="topbar-right">
+
+    <div class="topbar-user-info">
+      <div class="topbar-user-name">{{ userName }}</div>
+      <div class="topbar-user-role">{{ roleName }}</div>
+    </div>
+
+    <div class="topbar-sep"></div>
+
+    <button class="topbar-btn" (click)="logout.emit()" matTooltip="Cerrar sesión">
+      <mat-icon>logout</mat-icon>
+    </button>
+  </div>
+</mat-toolbar>
