@@ -1,0 +1,233 @@
+<section class="users-page">
+  <mat-card class="filters-card">
+    <mat-card-content>
+      <header class="page-header">
+        <div class="header-left">
+          <button mat-icon-button (click)="goBack()" matTooltip="Volver">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="folio">
+          <h2 mat-dialog-title>{{ true ? 'Editar' : 'Nuevo' }} Embarque para sucursal: {{selectBranchName()}} </h2>
+          <p>Gestión de envío de productos</p>
+        </div>
+        </div>
+      </header>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="table-card">
+    <mat-card-content>
+      @if(isLoading()){
+      <div class="table-container">
+        <div class="row">
+          <div class="col-12">
+            <form [formGroup]="form" class="form">
+          <div class="row">
+            <div class="col-4">
+              <!-- Folio -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Embarque</mat-label>
+                <input
+                  matInput
+                  type="text"
+                  formControlName="Folio"
+                />
+              </mat-form-field>
+            </div>
+            <div class="col-4">
+              <!-- Branch -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Sucursal</mat-label>
+                <input
+                  matInput
+                  type="text"
+                  formControlName="Branch"
+                />
+              </mat-form-field>
+            </div>
+            <div class="col-4">
+              <!-- Status -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Estatus</mat-label>
+                <input
+                  matInput
+                  type="text"
+                  formControlName="Status"
+                />
+              </mat-form-field>
+            </div>
+          </div>
+        </form>
+          </div>
+        </div>
+        
+        @if(modo() == "E"){
+          <div class="row justify-content-end">
+            <div class="col-3" style="text-align: end;">
+              <button
+                mat-flat-button
+                color="primary"
+                (click)="btnAddLine()"
+                [disabled]="isSubmitting()"
+              >
+                <mat-icon>add_box</mat-icon>
+                Nuevo producto
+              </button>
+            </div>
+          </div>
+        }
+          <div class="row">
+            <div class="col-12">
+              <table mat-table [dataSource]="rows.controls" matSort>
+                <ng-container matColumnDef="product">
+                  <th mat-header-cell *matHeaderCellDef>Producto variante</th>
+                  <td mat-cell *matCellDef="let row">
+                    <div class="category-cell">
+                      <div class="product-variant-cell">
+                        <span class="product-name">{{ row.value.productName }}</span>
+                        <span class="variant-info">
+                          {{ row.value.variantDescription }}
+                          <span class="sku-code">({{ row.value.sku }})</span>
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="availableInventory">
+                  <th mat-header-cell *matHeaderCellDef>Inventario disponible</th>
+                  <td mat-cell *matCellDef="let row">
+                    <div class="category-cell">
+                      {{ row.value.originAvailableQuantity }}
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="branchAvailableStock">
+                  <th mat-header-cell *matHeaderCellDef>Inventario de sucursal</th>
+                  <td mat-cell *matCellDef="let row">
+                    <div class="category-cell">
+                      {{ row.value.branchAvailableStock }}
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="outstandingAmount">
+                  <th mat-header-cell *matHeaderCellDef>Cantidad pendiente</th>
+                  <td mat-cell *matCellDef="let row">
+                    <div class="category-cell">
+                      {{ row.value.backorderPendingQuantity }}
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="quantitySend">
+                  <th mat-header-cell *matHeaderCellDef>Cantidad a enviar</th>
+                  <td mat-cell *matCellDef="let row">
+                    <div class="category-cell" [formGroup]="row">
+                      @if (!row.value.isEditing){
+                        {{ row.value.quantity }}
+                      } @else {
+                        <div class="input-quantity">
+                          <mat-form-field appearance="outline" class="field-quantity">
+                            <input matInput type="number" formControlName="quantity">
+                          </mat-form-field>
+                        </div>
+                      }
+                    </div>
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="comments">
+                  <th mat-header-cell *matHeaderCellDef>Comentarios</th>
+                  <td mat-cell *matCellDef="let row">
+                    <div class="category-cell">
+                      <div class="category-cell" [formGroup]="row">
+                      @if (!row.value.isEditing){
+                        {{ row.value.lineComments }}
+                      } @else {
+                        <div class="input-quantity">
+                          <mat-form-field appearance="outline" class="field-quantity">
+                            <input matInput type="text" formControlName="lineComments">
+                          </mat-form-field>
+                        </div>
+                      }
+                    </div>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                  <td mat-cell *matCellDef="let row; let i = index">
+                    @if (!row.value.isEditing) {
+                      @if(modo() != 'C'){
+                        <button mat-icon-button
+                                class="dots-btn"
+                                [matMenuTriggerFor]="actionMenu"
+                                [matMenuTriggerData]="{ row: row.value, idx: i }">
+                          <mat-icon>more_vert</mat-icon>
+                        </button>
+                      }
+                    } @else {
+                      <button mat-icon-button
+                              class="dots-btn"
+                              [matMenuTriggerFor]="editingMenu"
+                              [matMenuTriggerData]="{ idx: i }">
+                        <mat-icon>more_vert</mat-icon>
+                      </button>
+                    }
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+                <tr class="empty-row" *matNoDataRow>
+                  <td [attr.colspan]="displayedColumns.length">
+                    <div class="empty-state">
+                      <mat-icon>Embarques</mat-icon>
+                      <p>No se encontraron embarques</p>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+<mat-menu #actionMenu="matMenu" panelClass="demo-dropdown">
+  <ng-template matMenuContent let-row="row" let-idx="idx">
+
+    <button mat-menu-item class="menu-edit" (click)="editRow(idx)">
+      <mat-icon>edit</mat-icon>
+      <span>Editar</span>
+    </button>
+
+    <mat-divider></mat-divider>
+
+    <button mat-menu-item class="menu-reject" (click)="btnDelateLine(row)">
+      <mat-icon>delete</mat-icon>
+      <span>Eliminar</span>
+    </button>
+
+  </ng-template>
+</mat-menu>
+
+<mat-menu #editingMenu="matMenu" panelClass="demo-dropdown">
+  <ng-template matMenuContent let-idx="idx">
+
+    @if(modo() == "E"){
+      <button mat-menu-item class="menu-approve" (click)="saveRow(idx)">
+        <mat-icon>save</mat-icon>
+        <span>Guardar</span>
+      </button>
+    }
+
+    <button mat-menu-item class="menu-reject" (click)="cancelEdit(idx)">
+      <mat-icon>close</mat-icon>
+      <span>Cancelar</span>
+    </button>
+
+  </ng-template>
+</mat-menu>
+            </div>
+          </div>
+          
+      </div>
+    }
+    </mat-card-content>
+  </mat-card>
+</section>

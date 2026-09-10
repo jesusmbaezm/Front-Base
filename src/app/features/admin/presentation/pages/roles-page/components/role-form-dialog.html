@@ -1,0 +1,124 @@
+<div class="modal-wrapper">
+  <!-- Header -->
+  <div class="modal-header">
+    <div>
+      <div class="modal-title">{{ isEdit ? 'Editar rol' : 'Nuevo rol' }}</div>
+      <div class="modal-subtitle">{{ isEdit ? 'Modifica los datos y permisos del rol' : 'Define un nuevo rol y sus permisos' }}</div>
+    </div>
+    <button class="modal-close" type="button" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Body -->
+  <div class="modal-body">
+    @if (isLoadingData()) {
+      <div class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    } @else {
+      <form [formGroup]="form">
+        <div class="fields-one-grip">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="form-field no-margin">
+            <mat-label>Nombre del rol</mat-label>
+            <input matInput class="form-input" formControlName="name" placeholder="Ej: Administrador">
+            @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
+              <mat-error class="form-error">El nombre es requerido</mat-error>
+            }
+            @if (form.get('name')?.hasError('minlength') && form.get('name')?.touched) {
+              <mat-error>Mínimo 3 caracteres</mat-error>
+            }
+          </mat-form-field>
+        </div>
+        <div class="fields-one-grip">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="form-field no-margin">
+            <mat-label>Descripción</mat-label>
+            <input matInput class="form-input" formControlName="description" placeholder="Descripción del rol">
+            @if (form.get('description')?.hasError('required') && form.get('description')?.touched) {
+              <mat-error class="form-error">La descripción es requerida</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <!-- Permissions section -->
+        <div class="perms-section">
+          <div class="perms-top">
+            <div class="perms-label">
+              Permisos
+              <span class="perms-badge">{{ selectedCount }}</span>
+            </div>
+            <div class="perms-actions">
+              <button type="button" class="link-btn" (click)="selectAll()" [disabled]="(isSystem && isEdit) || isSubmitting()">Seleccionar todos</button>
+              <span class="sep">·</span>
+              <button type="button" class="link-btn" (click)="deselectAll()" [disabled]="(isSystem && isEdit) || isSubmitting()">Deseleccionar todos</button>
+            </div>
+          </div>
+
+          <div class="perms-search">
+            <mat-icon class="search-icon">search</mat-icon>
+            <input class="search-input" type="text" placeholder="Buscar permiso…"
+                   [value]="searchQuery()"
+                   (input)="searchQuery.set($any($event.target).value)" />
+          </div>
+
+          <div class="groups-list">
+            @for (mod of filteredModuleGroups(); track mod.module) {
+              <div class="module-section">
+                <div class="module-header">{{ mod.module }}</div>
+                @for (group of mod.subgroups; track group.name) {
+                  <div class="group">
+                    <div class="group-header" (click)="toggleGroup(group.name)">
+                      <mat-checkbox
+                        [checked]="isGroupAllSelected(group)"
+                        [indeterminate]="isGroupIndeterminate(group)"
+                        [disabled]="(isSystem && isEdit) || isSubmitting()"
+                        (change)="toggleGroupAll(group, $event.checked)"
+                        (click)="$event.stopPropagation()"
+                        class="group-checkbox">
+                      </mat-checkbox>
+                      <span class="group-name">{{ group.label }}</span>
+                      <span class="group-count">{{ group.permissions.length }}</span>
+                      <mat-icon class="group-chevron" [class.open]="isGroupExpanded(group.name)">chevron_right</mat-icon>
+                    </div>
+
+                    @if (isGroupExpanded(group.name)) {
+                      <div class="group-perms">
+                        @for (perm of group.permissions; track perm.id) {
+                          <div class="perm-row">
+                            <mat-checkbox
+                              [checked]="isPermissionSelected(perm.id)"
+                              [disabled]="(isSystem && isEdit) || isSubmitting()"
+                              (change)="togglePermission(perm.id, $event.checked)">
+                            </mat-checkbox>
+                            <div class="perm-info">
+                              <div class="perm-label">
+                                {{ perm.label }}&nbsp;<span class="perm-key">{{ perm.name }}</span>
+                              </div>
+                              <span class="perm-desc">{{ perm.description }}</span>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+            @if (filteredModuleGroups().length === 0) {
+              <div class="perms-empty">No se encontraron permisos</div>
+            }
+          </div>
+        </div>
+      </form>
+    }
+  </div>
+
+  <!-- Footer -->
+  <app-modal-footer
+    [saveLabel]="isEdit ? 'Guardar cambios' : 'Crear rol'"
+    [saveDisabled]="form.invalid"
+    [isSubmitting]="isSubmitting()"
+    (cancel)="onCancel()"
+    (save)="onSubmit()">
+  </app-modal-footer>
+</div>

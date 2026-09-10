@@ -1,0 +1,42 @@
+<div class="modal-wrapper">
+  <!-- Header -->
+  <div class="modal-header">
+    <div>
+      <div class="modal-title">{{ isEdit ? 'Editar' : 'Nueva' }} Línea</div>
+    </div>
+    <button class="modal-close" type="button" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Body -->
+  <div class="modal-body">
+    <form [formGroup]="form">
+      @if (isLoading()) {
+        <div class="form-field">
+          <app-product-lookup label="Buscar producto"
+            [branchId]="data.line?.destinationBranchId ?? null"
+            (productSelected)="onProductSelected($event)"
+            #productLookupComponent></app-product-lookup>
+        </div>
+
+        <div class="form-field">
+          <div class="form-label">Cantidad *</div>
+          <input class="form-input" type="text" formControlName="Quantity"
+                 [class.error]="form.get('Quantity')?.invalid && form.get('Quantity')?.touched">
+        </div>
+
+        <div class="form-field no-margin">
+          <div class="form-label">Comentarios</div>
+          <input class="form-input" type="text" formControlName="LineComments">
+        </div>
+      }
+    </form>
+  </div>
+
+  <!-- Footer -->
+  <div class="modal-footer">
+    <button class="btn-cancel" type="button" (click)="onCancel()">Cancelar</button>
+    <button class="btn-save" type="button" [disabled]="form.invalid" (click)="onSubmit()">Agregar</button>
+  </div>
+</div>

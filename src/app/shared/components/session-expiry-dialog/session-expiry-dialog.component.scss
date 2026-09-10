@@ -1,0 +1,121 @@
+.session-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 28px 28px 24px;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.session-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #FFFBEB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.session-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.session-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1A1F36;
+  margin: 0;
+}
+
+.session-subtitle {
+  font-size: 12px;
+  color: #9CA3AF;
+  margin: 0;
+}
+
+.session-countdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.countdown-time {
+  font-size: 36px;
+  font-weight: 700;
+  color: #1A1F36;
+  letter-spacing: 3px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.countdown-bar {
+  width: 100%;
+  height: 4px;
+  background: #E5E7EB;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.countdown-fill {
+  height: 100%;
+  background: #F5A623;
+  border-radius: 999px;
+  transition: width 1s linear;
+}
+
+.countdown-total {
+  font-size: 11px;
+  color: #9CA3AF;
+}
+
+.session-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btn-continue {
+  width: 100%;
+  height: 40px;
+  border-radius: 8px;
+  background: #2F4499;
+  color: #fff;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: background 0.15s;
+
+  &:hover { background: #1C2B5E; }
+}
+
+.btn-logout {
+  width: 100%;
+  height: 36px;
+  border-radius: 8px;
+  background: #fff;
+  color: #6B7280;
+  border: 1.5px solid #E5E7EB;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+
+  &:hover { background: #F3F4F6; }
+}

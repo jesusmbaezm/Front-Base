@@ -1,0 +1,317 @@
+.products-dashboard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 500;
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: #666;
+    font-size: 14px;
+  }
+}
+
+/* ── Filtros compactos ───────────────────── */
+.filter-card {
+  background: white;
+  border: 0.5px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .filter-field {
+    --mat-form-field-container-height: 40px;
+    --mdc-outlined-text-field-container-shape: 8px;
+    min-width: 200px;
+
+    ::ng-deep .mat-mdc-form-field-infix {
+      padding-top: 8px !important;
+      padding-bottom: 8px !important;
+      min-height: unset !important;
+    }
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      padding: 0 12px !important;
+    }
+    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+      display: none !important;
+    }
+  }
+}
+
+.btn-buscar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #3730a3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  height: 40px;
+  white-space: nowrap;
+  margin-left: auto;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 1;
+  }
+  &:hover {
+    background: #312e81;
+  }
+}
+
+/* ── Loading ─────────────────────────────── */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+/* ── Tab card ────────────────────────────── */
+.tab-card {
+  background: white;
+  border: 0.5px solid #e5e5e5;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tabs-nav {
+  display: flex;
+  border-bottom: 1.5px solid #e5e5e5;
+  padding: 0 16px;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #888;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1.5px;
+  transition: color 0.15s;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    color: #1a1a2e;
+  }
+
+  &.active {
+    color: #3730a3;
+    border-bottom-color: #3730a3;
+  }
+}
+
+/* ── Tab sub-header ──────────────────────── */
+.tab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 0.5px solid #f0f0f0;
+  background: #f7f9fc;
+}
+
+.tab-header-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #aaa;
+}
+
+.tab-header-total {
+  font-size: 11px;
+  color: #aaa;
+}
+
+/* ── Fila de producto ────────────────────── */
+.prod-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 20px;
+  border-bottom: 0.5px solid #f5f5f5;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+/* ── Ranking ─────────────────────────────── */
+.rank {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+
+  &.rank-1 {
+    background: #fef3c7;
+    color: #b45309;
+  }
+  &.rank-2 {
+    background: #f3f4f6;
+    color: #6b7280;
+  }
+  &.rank-3 {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  &.rank-n {
+    background: #f5f5f5;
+    color: #aaa;
+  }
+}
+
+/* ── Info producto ───────────────────────── */
+.prod-info {
+  flex: 1;
+  min-width: 0;
+}
+.prod-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+.prod-variant {
+  font-size: 11px;
+  color: #aaa;
+  margin-top: 1px;
+}
+.prod-date {
+  font-size: 10px;
+  color: #bbb;
+  margin-top: 2px;
+}
+
+/* ── Barra de progreso ───────────────────── */
+.bar-wrap {
+  flex: 1;
+  max-width: 180px;
+}
+
+.bar {
+  height: 4px;
+  border-radius: 2px;
+  background: #f0f0f0;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+
+  &.bar-green {
+    background: #1a7a4a;
+  }
+  &.bar-amber {
+    background: #c2590a;
+  }
+  &.bar-red {
+    background: #b91c1c;
+  }
+}
+
+/* ── Valor numérico ──────────────────────── */
+.prod-val {
+  font-size: 15px;
+  font-weight: 700;
+  min-width: 40px;
+  text-align: right;
+  flex-shrink: 0;
+
+  &.val-green {
+    color: #1a7a4a;
+  }
+  &.val-amber {
+    color: #c2590a;
+  }
+  &.val-red {
+    color: #b91c1c;
+  }
+}
+
+/* ── Badge días ──────────────────────────── */
+.days-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #fff4e5;
+  color: #c2590a;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &.critical {
+    background: #fdf3f3;
+    color: #b91c1c;
+  }
+}
+
+/* ── Empty / Error ───────────────────────── */
+.empty-card {
+  background: white;
+  border: 0.5px solid #e5e5e5;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  color: #bbb;
+  gap: 8px;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+  }
+
+  &.error-state {
+    gap: 12px;
+    color: #667085;
+  }
+}

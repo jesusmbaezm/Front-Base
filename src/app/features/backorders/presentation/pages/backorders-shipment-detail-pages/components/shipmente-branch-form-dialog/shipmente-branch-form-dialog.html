@@ -1,0 +1,43 @@
+<div class="modal-wrapper">
+  <!-- Header -->
+  <div class="modal-header">
+    <div>
+      <div class="modal-title">Seleccionar sucursal destino</div>
+    </div>
+    <button class="modal-close" type="button" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Body -->
+  <div class="modal-body">
+    <form [formGroup]="form">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="full-width">
+        <mat-label>Sucursal destino</mat-label>
+        <mat-select formControlName="branchId">
+          @if (isLoadingBranch()) {
+            <mat-option [value]="null" disabled>Cargando sucursales...</mat-option>
+          } @else if (availableBranches.length === 0) {
+            <mat-option [value]="null" disabled>No hay sucursales disponibles</mat-option>
+          } @else {
+            <mat-option [value]="null">Seleccione...</mat-option>
+            @for (branch of availableBranches; track branch.id) {
+              <mat-option [value]="branch.id">{{ branch.name }}</mat-option>
+            }
+          }
+        </mat-select>
+        @if (form.get('branchId')?.hasError('required') && form.get('branchId')?.touched) {
+          <mat-error>Campo requerido</mat-error>
+        }
+      </mat-form-field>
+    </form>
+  </div>
+
+  <!-- Footer -->
+  <div class="modal-footer">
+    <button class="btn-cancel" type="button" (click)="onCancel()">Cancelar</button>
+    <button class="btn-save" type="button" [disabled]="form.invalid || isSubmitting()" (click)="onSubmit()">
+      Agregar
+    </button>
+  </div>
+</div>

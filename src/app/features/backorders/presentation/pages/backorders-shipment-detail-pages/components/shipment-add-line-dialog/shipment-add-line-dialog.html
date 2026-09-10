@@ -1,0 +1,86 @@
+<div class="modal-wrapper">
+  <div class="modal-header">
+    <div>
+      <div class="modal-title">Agregar productos</div>
+      <div class="modal-subtitle">{{ data.branchName }}</div>
+    </div>
+    <button class="modal-close" type="button" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="modal-body">
+    <!-- Search -->
+    <div class="search-box">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Buscar por nombre, SKU..."
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearchInput()" />
+    </div>
+
+    <!-- Results -->
+    @if (isLoading()) {
+      <div class="loading-state">
+        <mat-spinner diameter="28"></mat-spinner>
+      </div>
+    } @else if (rows().length === 0) {
+      <div class="empty-state">
+        <mat-icon>inventory_2</mat-icon>
+        <p>Sin resultados</p>
+      </div>
+    } @else {
+      <div class="results-table">
+        <table>
+          <thead>
+            <tr>
+              <th class="th-check"></th>
+              <th class="th-product">Producto</th>
+              <th class="th-stock">Disponible</th>
+              <th class="th-qty">Cantidad</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.productVariantId) {
+              <tr class="result-row" [class.row-selected]="row.selected" (click)="row.selected = !row.selected">
+                <td class="td-check" (click)="$event.stopPropagation()">
+                  <input type="checkbox" [(ngModel)]="row.selected" class="row-checkbox" />
+                </td>
+                <td class="td-product">
+                  <div class="product-name">{{ row.productName }}</div>
+                  <div class="product-sub">
+                    {{ row.variantDescription }}
+                    <span class="sku-code">({{ row.sku }})</span>
+                  </div>
+                </td>
+                <td class="td-stock">{{ row.originAvailableStock }}</td>
+                <td class="td-qty" (click)="$event.stopPropagation()">
+                  <input
+                    class="qty-input"
+                    [class.qty-input-error]="rowHasError(row)"
+                    type="number"
+                    min="1"
+                    [max]="row.originAvailableStock"
+                    [(ngModel)]="row.quantity"
+                    (focus)="row.selected = true"
+                    [matTooltip]="rowHasError(row) ? 'Máximo: ' + row.originAvailableStock : ''" />
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn-cancel" type="button" (click)="onCancel()">Cancelar</button>
+    <button class="btn-save" type="button"
+      [disabled]="selectedCount === 0 || hasError"
+      (click)="onSubmit()">
+      Agregar {{ selectedCount > 0 ? '(' + selectedCount + ')' : '' }}
+    </button>
+  </div>
+</div>

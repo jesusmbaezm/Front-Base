@@ -1,0 +1,107 @@
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 7px 12px;
+  margin-bottom: 12px;
+  background: white;
+
+  &:focus-within { border-color: #2F4499; box-shadow: 0 0 0 2px rgba(47, 68, 153, 0.1); }
+}
+
+.search-icon { font-size: 18px; width: 18px; height: 18px; color: #9CA3AF; flex-shrink: 0; }
+
+.search-input {
+  border: none;
+  outline: none;
+  font-size: 13px;
+  font-family: inherit;
+  color: #111827;
+  flex: 1;
+  background: transparent;
+  &::placeholder { color: #9CA3AF; }
+}
+
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 32px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px;
+  color: #aaa;
+  mat-icon { font-size: 32px; width: 32px; height: 32px; margin-bottom: 6px; opacity: 0.4; }
+  p { margin: 0; font-size: 12px; }
+}
+
+.results-table {
+  overflow-y: auto;
+  max-height: 360px;
+  border: 0.5px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+table { width: 100%; border-collapse: collapse; }
+
+.th-check  { width: 36px; padding: 8px 12px; }
+.th-product { padding: 8px 12px; text-align: left; }
+.th-stock  { width: 90px; padding: 8px 12px; text-align: center; }
+.th-qty    { width: 80px; padding: 8px 12px; text-align: center; }
+
+thead th {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #9CA3AF;
+  background: #FAFAFA;
+  border-bottom: 0.5px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.result-row {
+  cursor: pointer;
+  border-bottom: 0.5px solid #f3f4f6;
+  transition: background 0.1s;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: #F9FAFB; }
+  &.row-selected { background: #EFF6FF; }
+  &.row-selected:hover { background: #DBEAFE; }
+}
+
+.td-check  { padding: 10px 12px; text-align: center; vertical-align: middle; }
+.td-product { padding: 10px 12px; vertical-align: middle; }
+.td-stock  { padding: 10px 12px; text-align: center; font-size: 13px; color: #374151; vertical-align: middle; }
+.td-qty    { padding: 10px 12px; text-align: center; vertical-align: middle; }
+
+.row-checkbox { cursor: pointer; width: 15px; height: 15px; accent-color: #2F4499; }
+
+.product-name { font-size: 13px; font-weight: 500; color: #111827; }
+.product-sub  { font-size: 11px; color: #9CA3AF; margin-top: 1px; }
+.sku-code     { font-family: 'Courier New', monospace; color: #2F4499; font-size: 10px; }
+
+.qty-input {
+  width: 56px;
+  text-align: center;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  background: white;
+
+  &:focus { border-color: #2F4499; box-shadow: 0 0 0 2px rgba(47, 68, 153, 0.12); }
+  &.qty-input-error { border-color: #EF4444; color: #EF4444; }
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  -moz-appearance: textfield;
+}

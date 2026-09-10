@@ -1,0 +1,158 @@
+<section class="products-dashboard-page">
+  <header class="page-header">
+    <div>
+      <h1>Reportes de Productos</h1>
+      <p>Dashboard de análisis de ventas y comportamiento de productos</p>
+    </div>
+  </header>
+
+  <!-- Filtros compactos -->
+  <div class="filter-card">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="filter-field">
+      <mat-label>Sucursal</mat-label>
+      <mat-select [value]="selectedBranchId()" (selectionChange)="onBranchChange($event.value)">
+        @for (branch of branches(); track branch.id) {
+          <mat-option [value]="branch.id">{{ branch.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <button class="btn-buscar" (click)="loadDashboard()">
+      <mat-icon>search</mat-icon>
+      Buscar
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  } @else if (hasError()) {
+    <div class="empty-card">
+      <div class="empty-state error-state">
+        <mat-icon>error_outline</mat-icon>
+        <p>Error al cargar los datos. Por favor intenta de nuevo.</p>
+        <button class="btn-buscar" (click)="loadDashboard()">
+          <mat-icon>refresh</mat-icon>
+          Reintentar
+        </button>
+      </div>
+    </div>
+  } @else if (dashboardData()) {
+
+    <div class="tab-card">
+
+      <!-- Navegación de tabs -->
+      <div class="tabs-nav">
+        <div class="tab" [class.active]="activeTab() === 'mas'" (click)="setTab('mas')">
+          <mat-icon>trending_up</mat-icon>
+          Más Vendidos
+        </div>
+        <div class="tab" [class.active]="activeTab() === 'menos'" (click)="setTab('menos')">
+          <mat-icon>trending_down</mat-icon>
+          Menos Vendidos
+        </div>
+        <div class="tab" [class.active]="activeTab() === 'sin'" (click)="setTab('sin')">
+          <mat-icon>schedule</mat-icon>
+          Sin Ventas
+        </div>
+        <div class="tab" [class.active]="activeTab() === 'devueltos'" (click)="setTab('devueltos')">
+          <mat-icon>refresh</mat-icon>
+          Devueltos
+        </div>
+      </div>
+
+      <div class="tab-body">
+
+        <!-- Sub-header -->
+        <div class="tab-header">
+          <span class="tab-header-label">Producto</span>
+          <span class="tab-header-total">
+            {{ currentList().length }} productos
+            @if (activeTab() === 'mas' || activeTab() === 'menos' || activeTab() === 'devueltos') {
+              · {{ currentTotal() }} unidades
+            }
+          </span>
+        </div>
+
+        <!-- Más / Menos vendidos -->
+        @if (activeTab() === 'mas' || activeTab() === 'menos') {
+          @for (prod of currentList(); track prod.productVariantId; let i = $index) {
+            <div class="prod-row">
+              <div class="rank" [ngClass]="getRankClass(i)">{{ i + 1 }}</div>
+              <div class="prod-info">
+                <div class="prod-name">{{ prod.productName }}</div>
+                <div class="prod-variant">{{ prod.variantDescription }}</div>
+              </div>
+              <div class="bar-wrap">
+                <div class="bar">
+                  <div class="bar-fill"
+                       [class.bar-green]="activeTab() === 'mas'"
+                       [class.bar-amber]="activeTab() === 'menos'"
+                       [style.width]="getBarWidth(prod.totalQuantity) + '%'">
+                  </div>
+                </div>
+              </div>
+              <div class="prod-val"
+                   [class.val-green]="activeTab() === 'mas'"
+                   [class.val-amber]="activeTab() === 'menos'">
+                {{ prod.totalQuantity }}
+              </div>
+            </div>
+          }
+        }
+
+        <!-- Sin ventas -->
+        @if (activeTab() === 'sin') {
+          @for (prod of currentList(); track prod.productVariantId; let i = $index) {
+            <div class="prod-row">
+              <div class="rank rank-n">{{ i + 1 }}</div>
+              <div class="prod-info">
+                <div class="prod-name">{{ prod.productName }}</div>
+                <div class="prod-variant">{{ prod.variantDescription }}</div>
+                <div class="prod-date">Último movimiento: {{ formatDate(prod.lastSaleDate) }}</div>
+              </div>
+              <span class="days-badge" [class.critical]="prod.daysSinceLastSale >= 30">
+                {{ prod.daysSinceLastSale }} días
+              </span>
+            </div>
+          }
+        }
+
+        <!-- Devueltos -->
+        @if (activeTab() === 'devueltos') {
+          @if (currentList().length === 0) {
+            <div class="empty-state">
+              <mat-icon>check_circle_outline</mat-icon>
+              <p>No hay productos devueltos en este período</p>
+            </div>
+          }
+          @for (prod of currentList(); track prod.productVariantId; let i = $index) {
+            <div class="prod-row">
+              <div class="rank rank-n">{{ i + 1 }}</div>
+              <div class="prod-info">
+                <div class="prod-name">{{ prod.productName }}</div>
+                <div class="prod-variant">{{ prod.variantDescription }}</div>
+              </div>
+              <div class="bar-wrap">
+                <div class="bar">
+                  <div class="bar-fill bar-red" [style.width]="getBarWidth(prod.totalQuantity) + '%'"></div>
+                </div>
+              </div>
+              <div class="prod-val val-red">{{ prod.totalQuantity }}</div>
+            </div>
+          }
+        }
+
+      </div>
+    </div>
+
+  } @else {
+    <div class="empty-card">
+      <div class="empty-state">
+        <mat-icon>inventory_2</mat-icon>
+        <p>Selecciona una sucursal para ver los reportes</p>
+      </div>
+    </div>
+  }
+</section>

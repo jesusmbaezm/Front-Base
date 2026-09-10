@@ -1,0 +1,34 @@
+<mat-sidenav-container
+  class="mainWrapper blue_theme light-theme"
+  autosize
+  autoFocus
+  dir="ltr"
+  [ngClass]="isDarkTheme ? 'theme-dark' : 'theme-light'"
+>
+  <mat-sidenav
+    #leftsidenav
+    mode="side"
+    [opened]="sidebarOpened"
+    (closedStart)="onSidenavClosedStart()"
+    class="sidebarNav"
+  >
+    <div class="flex-layout">
+      <app-sidebar [appName]="'JAEL'"></app-sidebar>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="shell-content-area">
+    <app-topbar
+      [title]="''"
+      [userName]="userName()"
+      [roleName]="roleName()"
+      (menuClick)="toggleSidebar()"
+      (logout)="onLogout()"
+    >
+    </app-topbar>
+
+    <main class="pageWrapper maxWidth">
+      <router-outlet></router-outlet>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

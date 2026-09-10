@@ -1,0 +1,696 @@
+<div class="detail-wrapper">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-left">
+      <button mat-icon-button (click)="goBack()" matTooltip="Volver">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="title-block">
+        <div class="title-row">
+          <h1>Recepción</h1>
+          @if (isLoading()) {
+            <span class="badge" [ngClass]="statusBadgeClass">
+              <span class="bdot"></span>{{ statusLabel }}
+            </span>
+          }
+        </div>
+        @if (isLoading()) {
+          <div class="folio-area">
+            <span class="folio-chip">{{ form?.value?.Folio }}</span>
+            <span class="folio-sub">
+              {{ form.value.OriginBranch }} → {{ form.value.Branch }} ·
+              {{ form.value.fechaAt | date: 'dd/MMM/yyyy HH:mm' | uppercase }}
+            </span>
+          </div>
+        }
+      </div>
+    </div>
+  </header>
+
+  @if (!isLoading()) {
+    <div class="skeleton-wrapper">
+      <div class="skeleton-card">
+        <div class="skeleton-bar sk-w40 sk-h14"></div>
+        <div class="skeleton-table">
+          @for (i of [1, 2, 3, 4, 5]; track i) {
+            <div class="skeleton-row">
+              <div class="skeleton-bar sk-w60 sk-h12"></div>
+              <div class="skeleton-bar sk-w20 sk-h12"></div>
+              <div class="skeleton-bar sk-w20 sk-h12"></div>
+              <div class="skeleton-bar sk-w20 sk-h12"></div>
+              <div class="skeleton-bar sk-w20 sk-h12"></div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (isLoading()) {
+    <!-- Instruction banner — edit mode only -->
+    @if (modo() === 'E') {
+      <div class="info-banner">
+        <mat-icon class="info-icon">info</mat-icon>
+        <span>
+          Captura la cantidad que recibes físicamente en cada producto. Si hay daños o faltantes,
+          anótalos en "Con incidencia" y adjunta evidencia fotográfica.
+        </span>
+      </div>
+    }
+
+    <!-- Capture table -->
+    <div class="card">
+      <div class="card-head">
+        <span class="section-label">Productos del embarque</span>
+        <span class="card-head-meta">{{ rows?.length }} SKU</span>
+      </div>
+
+      <table class="capture-table">
+        <thead>
+          <tr>
+            <th class="th">Producto</th>
+            <th class="th">SKU</th>
+            <th class="th th-center">Enviado</th>
+            <th class="th th-center th-success">Recibido</th>
+            <th class="th th-center th-danger">Con incidencia</th>
+            <th class="th th-center">Capturado</th>
+            <th class="th">Evidencia</th>
+            <th class="th">Comentario</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows?.controls; track $index; let i = $index) {
+            <tr [formGroup]="asFormGroup(row)" class="capture-row" [ngClass]="getLineRowClass(row)">
+              <!-- Producto -->
+              <td class="td">
+                <div class="td-main">{{ row.value.productName }}</div>
+                @if (row.value.variantDescription) {
+                  <div class="td-sub">{{ row.value.variantDescription }}</div>
+                }
+              </td>
+
+              <!-- SKU -->
+              <td class="td td-mono td-small">{{ row.value.sku }}</td>
+
+              <!-- Enviado -->
+              <td class="td td-center">
+                <span class="qty-badge">{{ row.value.shippedQuantity }}</span>
+              </td>
+
+              <!-- Recibido -->
+              <td class="td td-center">
+                <div class="qty-cell">
+                  <input
+                    type="number"
+                    class="qty-input"
+                    [ngClass]="getReceivedClass(row)"
+                    formControlName="receivedQuantity"
+                    min="0"
+                    placeholder="0"
+                  />
+                  @if (row.value.receivedQuantity > 0) {
+                    <mat-icon class="qty-icon qty-icon-ok">check_circle</mat-icon>
+                  }
+                </div>
+              </td>
+
+              <!-- Con incidencia -->
+              <td class="td td-center">
+                <div class="qty-cell">
+                  <input
+                    type="number"
+                    class="qty-input"
+                    [ngClass]="getIncidentClass(row)"
+                    formControlName="incidentQuantity"
+                    min="0"
+                    placeholder="0"
+                  />
+                  @if (row.value.incidentQuantity > 0) {
+                    <mat-icon class="qty-icon qty-icon-incident">error</mat-icon>
+                  }
+                </div>
+              </td>
+
+              <!-- Capturado vs Enviado -->
+              <td class="td td-center">
+                @let diff = rowDiff(row);
+                @let captured = rowCaptured(row);
+                <div class="captured-cell">
+                  <span class="captured-ratio"
+                    [class.captured-ok]="diff === 0 && captured > 0"
+                    [class.captured-over]="diff < 0"
+                    [class.captured-under]="diff > 0">
+                    {{ captured }}&nbsp;/&nbsp;{{ row.value.shippedQuantity }}
+                  </span>
+                  @if (diff === 0 && captured > 0) {
+                    <mat-icon class="captured-icon captured-icon-ok">check_circle</mat-icon>
+                  } @else if (diff < 0) {
+                    <mat-icon class="captured-icon captured-icon-over">error</mat-icon>
+                  } @else if (diff > 0 && captured > 0) {
+                    <mat-icon class="captured-icon captured-icon-under">warning</mat-icon>
+                  }
+                </div>
+              </td>
+
+              <!-- Evidencia -->
+              <td class="td">
+                @if (row.value.incidentQuantity > 0) {
+                  <button
+                    class="btn-photo"
+                    [ngClass]="{
+                      'btn-photo-active':
+                        row.value.attachedFiles?.length +
+                          (row.value.existingDocuments?.length ?? 0) >
+                        0,
+                      'btn-photo-required':
+                        row.value.incidentQuantity > 0 &&
+                        modo() === 'E' &&
+                        !(row.value.attachedFiles?.length > 0),
+                    }"
+                    [disabled]="
+                      !row.value.incidentQuantity ||
+                      (modo() !== 'E' && !(row.value.existingDocuments?.length > 0))
+                    "
+                    matTooltip="{{ modo() === 'E' ? 'Adjuntar evidencia' : 'Ver evidencia' }}"
+                    (click)="openPhotoPopover(i, $event)"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      style="flex-shrink: 0"
+                    >
+                      <path
+                        d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    {{
+                      row.value.attachedFiles?.length + (row.value.existingDocuments?.length ?? 0) >
+                      0
+                        ? row.value.attachedFiles?.length +
+                          (row.value.existingDocuments?.length ?? 0) +
+                          ' foto(s)'
+                        : 'Adjuntar'
+                    }}
+                  </button>
+                } @else {
+                  <span class="no-comment">Sin incidencia</span>
+                }
+              </td>
+
+              <!-- Comentario -->
+              <td class="td td-comment">
+                @if (row.value.incidentQuantity === 0) {
+                  <span class="no-comment">Sin incidencia</span>
+                } @else if (modo() === 'E') {
+                  @if (!row.value.incidentComments?.trim()) {
+                    <button
+                      class="comment-trigger comment-trigger-missing"
+                      (click)="openCommentPopover(i, $event)"
+                      matTooltip="Escribir comentario"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                        />
+                      </svg>
+                      <span>Requerido</span>
+                    </button>
+                  } @else {
+                    <button
+                      class="comment-trigger comment-trigger-filled"
+                      (click)="openCommentPopover(i, $event)"
+                      matTooltip="Editar comentario"
+                      [matTooltipShowDelay]="300"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                        />
+                      </svg>
+                      <span class="comment-preview">{{ row.value.incidentComments }}</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="edit-icon">
+                        <path
+                          d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                        />
+                      </svg>
+                    </button>
+                  }
+                } @else {
+                  <button
+                    class="comment-trigger comment-trigger-filled"
+                    (click)="openCommentPopover(i, $event)"
+                    matTooltip="Ver comentario"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                    <span class="comment-preview">{{ row.value.incidentComments }}</span>
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- Photo popover -->
+      @if (photoPopoverRowIndex !== null) {
+        <div
+          class="photo-popover"
+          [style.top.px]="photoPopoverY"
+          [style.left.px]="photoPopoverX"
+          (click)="$event.stopPropagation()"
+        >
+          <div class="popover-header">
+            <span
+              class="popover-title"
+              [ngClass]="
+                rows.at(photoPopoverRowIndex).get('attachedFiles')?.value?.length > 0
+                  ? 'popover-title-filled'
+                  : 'popover-title-missing'
+              "
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Evidencia fotográfica
+            </span>
+            <button class="popover-close" (click)="closePhotoPopover()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+
+          <div class="popover-product">
+            {{ rows.at(photoPopoverRowIndex).value.productName }} ·
+            {{ rows.at(photoPopoverRowIndex).value.incidentQuantity }}
+            pieza{{ rows.at(photoPopoverRowIndex).value.incidentQuantity > 1 ? 's' : '' }} con
+            incidencia
+          </div>
+
+          @if (modo() === 'C') {
+            <!-- View mode: existing server documents as tiles -->
+            @if ((rows.at(photoPopoverRowIndex).value.existingDocuments ?? []).length === 0) {
+              <div class="photo-popover-empty">
+                <span class="material-symbols-outlined">photo_library</span>
+                <span>Sin fotos adjuntas</span>
+              </div>
+            } @else {
+              <div class="photo-popover-grid">
+                @for (doc of rows.at(photoPopoverRowIndex).value.existingDocuments; track doc.id) {
+                  <div class="photo-tile" [matTooltip]="doc.fileName" matTooltipPosition="above">
+                    @if (getDocPreview(doc.id)) {
+                      <img
+                        class="photo-tile-img"
+                        [src]="getDocPreview(doc.id)!"
+                        [alt]="doc.fileName"
+                      />
+                    } @else {
+                      <div class="photo-tile-file">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                          <path
+                            d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </div>
+                    }
+                    <button
+                      class="photo-tile-download"
+                      (click)="onDownload(rows.at(photoPopoverRowIndex).value.id, doc.id, doc.fileName)"
+                      matTooltip="Descargar"
+                      matTooltipPosition="above"
+                    >
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          } @else {
+            <!-- Edit mode: new attached files -->
+            @if ((rows.at(photoPopoverRowIndex).get('attachedFiles')?.value ?? []).length === 0) {
+              <div class="photo-popover-empty">
+                <span class="material-symbols-outlined">photo_library</span>
+                <span>Sin fotos adjuntas</span>
+              </div>
+            } @else {
+              <div class="photo-popover-grid">
+                @for (
+                  file of rows.at(photoPopoverRowIndex).get('attachedFiles')?.value;
+                  track $index;
+                  let fi = $index
+                ) {
+                  <div class="photo-tile" [matTooltip]="file.name">
+                    @if (getPreview(file)) {
+                      <img class="photo-tile-img" [src]="getPreview(file)" [alt]="file.name" />
+                    } @else {
+                      <div class="photo-tile-file">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                          <path
+                            d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </div>
+                    }
+                    <button class="photo-tile-remove" (click)="removePhotoFromPopover(fi)">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M6 18L18 6M6 6l12 12"
+                          stroke="currentColor"
+                          stroke-width="3"
+                          stroke-linecap="round"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          }
+
+          <div class="popover-footer">
+            @if (modo() === 'E') {
+              @if (
+                (rows.at(photoPopoverRowIndex).get('attachedFiles')?.value ?? []).length < maxPhotos
+              ) {
+                <label class="popover-add-btn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M12 4.5v15m7.5-7.5h-15"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                  Agregar fotos
+                  <input
+                    type="file"
+                    hidden
+                    multiple
+                    accept="image/*,.pdf"
+                    (change)="onPhotoFileAdd($event)"
+                  />
+                </label>
+              } @else {
+                <span class="popover-hint">Máximo {{ maxPhotos }} fotos</span>
+              }
+            } @else {
+              <span></span>
+            }
+            <button class="popover-save" (click)="closePhotoPopover()">
+              {{ modo() === 'E' ? 'Listo' : 'Cerrar' }}
+            </button>
+          </div>
+          <div class="popover-arrow"></div>
+        </div>
+      }
+
+      <!-- Comment popover -->
+      @if (activeRowIndex !== null) {
+        <div
+          class="comment-popover"
+          [style.top.px]="popoverY"
+          [style.left.px]="popoverX"
+          (click)="$event.stopPropagation()"
+        >
+          <div class="popover-header">
+            <span class="popover-title popover-title-neutral">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              {{
+                modo() === 'C'
+                  ? 'Comentario de incidencia'
+                  : activeCommentText.trim()
+                    ? 'Editar comentario'
+                    : 'Comentario requerido'
+              }}
+            </span>
+            <button class="popover-close" (click)="closeCommentPopover()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M6 18L18 6M6 6l12 12"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+          </div>
+          <div class="popover-product">
+            {{ rows.at(activeRowIndex).value.productName }} ·
+            {{ rows.at(activeRowIndex).value.incidentQuantity }}
+            pieza{{ rows.at(activeRowIndex).value.incidentQuantity > 1 ? 's' : '' }} con incidencia
+          </div>
+          @if (modo() === 'C') {
+            <div class="popover-readonly-text">
+              {{ activeCommentText || 'Sin comentario registrado.' }}
+            </div>
+          } @else {
+            <textarea
+              class="popover-textarea"
+              [(ngModel)]="activeCommentText"
+              placeholder="Describe la incidencia detalladamente…"
+              rows="3"
+            >
+            </textarea>
+          }
+          <div class="popover-footer">
+            @if (modo() === 'C') {
+              <span></span>
+              <button class="popover-save" (click)="closeCommentPopover()">Cerrar</button>
+            } @else {
+              @if (!activeCommentText.trim()) {
+                <span class="popover-hint">Este campo es obligatorio para confirmar</span>
+              } @else {
+                <span></span>
+              }
+              <button
+                class="popover-save"
+                (click)="saveCommentPopover()"
+                [disabled]="!activeCommentText.trim()"
+              >
+                Guardar
+              </button>
+            }
+          </div>
+          <div class="popover-arrow"></div>
+        </div>
+      }
+
+      <!-- Real-time totals footer -->
+      <div class="table-footer">
+        <div class="footer-totals">
+          <span class="total-item">Enviado: <strong>{{ totalSent }}</strong></span>
+          <span class="total-item total-success">Recibido OK: <strong>{{ totalReceived }}</strong></span>
+          @if (totalIncident > 0) {
+            <span class="total-item total-danger">Con incidencia: <strong>{{ totalIncident }}</strong></span>
+          }
+          <span class="total-item total-muted">Sin capturar: <strong>{{ totalPending }}</strong></span>
+          <span class="total-item footer-divider"></span>
+          <span class="total-item"
+            [class.total-success]="totalCaptured === totalSent && totalCaptured > 0"
+            [class.total-danger]="totalCaptured > totalSent"
+            [class.total-warning]="totalCaptured < totalSent && totalCaptured > 0">
+            Total capturado: <strong>{{ totalCaptured }} / {{ totalSent }}</strong>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom grid -->
+    <div class="bottom-grid">
+      <!-- Incidents summary / no incidents -->
+      @if (hasIncidents) {
+        <div class="card">
+          <div class="card-head">
+            <span class="section-label">Incidencias detectadas</span>
+          </div>
+          <div class="incidents-body">
+            @for (row of incidentRows; track $index) {
+              <div class="incident-block">
+                <div class="incident-name">
+                  {{ row.value.productName }} · {{ row.value.incidentQuantity }} pieza{{
+                    row.value.incidentQuantity > 1 ? 's' : ''
+                  }}
+                </div>
+                @if (row.value.incidentComments) {
+                  <div class="incident-comment">{{ row.value.incidentComments }}</div>
+                }
+                @if (row.value.incidentDocumentFileName) {
+                  <div class="incident-photos">📷 1 foto adjunta</div>
+                }
+              </div>
+            }
+            <p class="incident-note">
+              Los productos con incidencia irán a
+              <strong>Stock con Incidencia</strong> — no disponibles para venta.
+            </p>
+          </div>
+        </div>
+      } @else {
+        <div class="card no-incidents-card">
+          <div class="no-inc-icon-wrap">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                stroke="#059669"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <span class="no-inc-label">Sin incidencias registradas</span>
+          <span class="no-inc-sub"
+            >Toda la mercancía ha sido reportada conforme a las cantidades enviadas.</span
+          >
+        </div>
+      }
+
+      <!-- Confirm card -->
+      <div class="card confirm-card">
+        <div class="card-head">
+          <span class="section-label">{{
+            modo() === 'C' ? 'Resumen de entrega' : 'Confirmar entrega'
+          }}</span>
+        </div>
+        <div class="confirm-body">
+          <div class="movement-rows">
+            <div class="movement-row">
+              <span class="movement-label">{{ modo() === 'C' ? '✓' : '→' }} Stock disponible</span>
+              <span class="movement-value movement-success">+{{ totalReceived }} piezas</span>
+            </div>
+            @if (totalIncident > 0) {
+              <div class="movement-row">
+                <span class="movement-label">{{ modo() === 'C' ? '✓' : '→' }} Stock con incidencia</span>
+                <span class="movement-value movement-warning">+{{ totalIncident }} piezas</span>
+              </div>
+            }
+            @if (totalPending > 0) {
+              <div class="movement-row">
+                <span class="movement-label">→ Sin capturar aún</span>
+                <span class="movement-value movement-muted">{{ totalPending }} piezas</span>
+              </div>
+            }
+            <div class="movement-divider"></div>
+            <div class="movement-row movement-row-total">
+              <span class="movement-label"><strong>Total capturado</strong></span>
+              <span class="movement-value"
+                [class.movement-success]="totalCaptured === totalSent && totalCaptured > 0"
+                [class.movement-warning]="totalCaptured < totalSent"
+                [class.movement-danger]="totalCaptured > totalSent">
+                <strong>{{ totalCaptured }} / {{ totalSent }}</strong>
+              </span>
+            </div>
+          </div>
+
+          @if (modo() === 'E') {
+            <form [formGroup]="formConfirm">
+              <textarea
+                class="comment-input delivery-comment"
+                formControlName="Comments"
+                placeholder="Comentarios de entrega (opcional)…"
+                rows="2"
+              >
+              </textarea>
+            </form>
+
+            @if (totalPending > 0) {
+              <div class="warning-alert">
+                <mat-icon>info</mat-icon>
+                {{ totalPending }} piezas sin capturar — se registrarán como faltantes.
+              </div>
+            }
+            @if (hasMissingComments) {
+              <div class="blocking-alert">
+                <mat-icon>warning</mat-icon>
+                Obligatorio captura de comentario de la incidencia.
+              </div>
+            }
+            @if (hasMissingEvidence) {
+              <div class="blocking-alert">
+                <mat-icon>photo_camera</mat-icon>
+                Obligatorio captura de evidencia de producto con incidencia.
+              </div>
+            }
+
+            @if (isSubmitting()) {
+              <mat-spinner diameter="32" style="margin: 0 auto"></mat-spinner>
+            } @else {
+              <button class="btn-confirm" [disabled]="!canConfirm" (click)="onConfirm()">
+                <mat-icon>check_circle</mat-icon>
+                Confirmar entrega
+              </button>
+            }
+
+            @if (!canConfirm) {
+              <p class="confirm-hint">Completa todos los campos para habilitar</p>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

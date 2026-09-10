@@ -1,0 +1,233 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 500px;
+}
+
+.login-card {
+  width: 100%;
+  padding: 12px;
+  border-radius: 32px !important;
+  border: 1px solid #dbe3ee !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(248, 250, 252, 0.96) 100%
+  ) !important;
+  box-shadow:
+    0 24px 60px rgba(15, 23, 42, 0.1),
+    0 8px 20px rgba(21, 101, 192, 0.06) !important;
+  backdrop-filter: blur(10px);
+}
+
+.login-card__header {
+  padding: 10px 10px 0 !important;
+  margin-bottom: 12px;
+}
+
+.login-card mat-card-title {
+  margin: 0 0 10px;
+  font-size: 2.2rem;
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+.login-card mat-card-subtitle {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.login-card__content {
+  padding: 10px !important;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.login-field {
+  width: 100%;
+}
+
+/* Contenedor general */
+.login-form .mat-mdc-form-field {
+  width: 100%;
+}
+
+/* Altura cómoda */
+.login-form .mat-mdc-form-field-infix {
+  min-height: 56px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+/* Subscript */
+.login-form .mat-mdc-form-field-subscript-wrapper {
+  padding-top: 6px;
+}
+
+.login-form .mat-mdc-form-field-error {
+  font-size: 0.82rem;
+  line-height: 1.25;
+}
+
+/* Input */
+.login-form .mat-mdc-input-element {
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.login-form .mat-mdc-input-element::placeholder {
+  color: #94a3b8;
+}
+
+/* Label */
+.login-form .mat-mdc-floating-label,
+.login-form .mdc-floating-label {
+  color: #64748b !important;
+  font-weight: 500;
+}
+
+/* OJO: aquí sí damos radius al outline, pero solo en este componente */
+:host ::ng-deep .login-field .mdc-notched-outline__leading {
+  border-radius: 18px 0 0 18px !important;
+}
+
+:host ::ng-deep .login-field .mdc-notched-outline__trailing {
+  border-radius: 0 18px 18px 0 !important;
+}
+
+/* Colores del borde */
+/*:host ::ng-deep .login-field .mdc-notched-outline__leading,
+:host ::ng-deep .login-field .mdc-notched-outline__notch,
+:host ::ng-deep .login-field .mdc-notched-outline__trailing {
+  border-color: #cbd5e1 !important;
+  border-width: 1.5px !important;
+}*/
+
+:host ::ng-deep .login-field:hover .mdc-notched-outline__leading,
+:host ::ng-deep .login-field:hover .mdc-notched-outline__notch,
+:host ::ng-deep .login-field:hover .mdc-notched-outline__trailing {
+  border-color: #94a3b8 !important;
+}
+
+:host ::ng-deep .login-field.mat-focused .mdc-notched-outline__leading ,
+:host ::ng-deep .login-field.mat-focused .mdc-notched-outline__trailing, 
+:host ::ng-deep .login-field.mat-focused .mdc-notched-outline__notch {
+  border-color: #1565c0 !important;  
+  border-width: 2px !important;
+}
+
+:host ::ng-deep .login-field.mat-focused .mdc-notched-outline__notch {
+  border-left: none !important;
+}
+
+/* Fondo interno suave */
+:host ::ng-deep .login-field .mat-mdc-text-field-wrapper {
+  background: #ffffff !important;
+  border-radius: 18px !important;
+}
+
+/* Toggle password */
+.password-toggle {
+  color: #64748b !important;
+}
+
+.password-toggle:hover {
+  color: #1565c0 !important;
+  background: rgba(21, 101, 192, 0.08) !important;
+}
+
+/* Forgot password link */
+.forgot-password-link {
+  display: block;
+  text-align: right;
+  margin-top: -4px;
+  margin-bottom: 8px;
+  color: #1565c0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.forgot-password-link:hover {
+  color: #0d47a1;
+  text-decoration: underline;
+}
+
+/* Error box */
+.login-error {
+  margin-top: 2px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #b91c1c;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+/* Botón primary real */
+.submit-button {
+  width: 100%;
+  height: 52px;
+  margin-top: 10px;
+  border: 0 !important;
+  border-radius: 18px !important;
+  font-weight: 700 !important;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: #1152ac !important;
+  box-shadow:
+    0 14px 28px rgba(21, 101, 192, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+
+  --mdc-filled-button-container-color: #1565c0;
+  --mdc-filled-button-label-text-color: #ffffff;
+}
+
+.submit-button:hover {
+  --mdc-filled-button-container-color: #0d47a1;
+  transform: translateY(-1px);
+}
+
+.submit-button:disabled {
+  opacity: 0.78;
+  transform: none;
+  box-shadow: none;
+}
+
+.submit-button mat-spinner {
+  --mdc-circular-progress-active-indicator-color: #ffffff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  :host {
+    max-width: 100%;
+  }
+
+  .login-card {
+    border-radius: 24px !important;
+    padding: 8px;
+  }
+
+  .login-card mat-card-title {
+    font-size: 1.9rem;
+  }
+}

@@ -1,0 +1,63 @@
+<div class="modal-wrapper">
+  <!-- Header -->
+  <div class="modal-header">
+    <div>
+      <div class="modal-title">Actualizar entrega de línea</div>
+    </div>
+    <button class="modal-close" type="button" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Body -->
+  <div class="modal-body">
+    <form [formGroup]="form">
+      <div class="fields-grid">
+        <div class="form-field no-margin">
+          <div class="form-label">Cantidad recibida *</div>
+          <input class="form-input" type="number" formControlName="receivedQuantity" min="0"
+                 [class.error]="form.get('receivedQuantity')?.invalid && form.get('receivedQuantity')?.touched">
+          @if (form.get('receivedQuantity')?.hasError('required') && form.get('receivedQuantity')?.touched) {
+            <div class="form-error">Campo requerido</div>
+          }
+        </div>
+
+        <div class="form-field no-margin">
+          <div class="form-label">Cantidad con incidente</div>
+          <input class="form-input" type="number" formControlName="incidentQuantity" min="0">
+        </div>
+      </div>
+
+      <div class="form-field" style="padding: 4px 0;">
+        <mat-checkbox formControlName="hasIncident">¿Tiene incidente?</mat-checkbox>
+      </div>
+
+      <div class="form-field">
+        <div class="form-label">Comentarios del incidente</div>
+        <textarea class="form-textarea" rows="2" formControlName="incidentComments"></textarea>
+      </div>
+
+      <div class="form-field">
+        <div class="form-label">Comentarios de la línea</div>
+        <textarea class="form-textarea" rows="2" formControlName="lineComments"></textarea>
+      </div>
+
+      <div class="form-field no-margin">
+        <div class="form-label">Archivo de incidente</div>
+        <input type="file" (change)="onSelectFile($event)" style="font-size:13px;">
+      </div>
+    </form>
+  </div>
+
+  <!-- Footer -->
+  <div class="modal-footer">
+    <button class="btn-cancel" type="button" (click)="onCancel()" [disabled]="isSubmitting()">Cancelar</button>
+    @if (isSubmitting()) {
+      <mat-spinner diameter="24"></mat-spinner>
+    } @else {
+      <button class="btn-save" type="button" [disabled]="form.invalid" (click)="onSubmit()">
+        Actualizar entrega de línea
+      </button>
+    }
+  </div>
+</div>

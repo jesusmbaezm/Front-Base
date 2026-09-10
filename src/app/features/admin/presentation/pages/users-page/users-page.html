@@ -1,0 +1,233 @@
+<section class="users-page">
+  <header class="page-header">
+    <div>
+      <h1>Usuarios</h1>
+      <p>Gestión de usuarios del sistema</p>
+    </div>
+    <div class="page-header__actions">
+      <app-button
+        *appHasPermission="Permissions.users.create"
+        variant="primary"
+        matIcon="person_add"
+        (onClick)="openCreateDialog()"
+        [disabled]="isSubmitting()"
+      >
+        Nuevo usuario
+      </app-button>
+    </div>
+  </header>
+
+  <!-- Filtros -->
+  <mat-card class="filters-card demo-card">
+    <mat-card-content>
+      <div class="filters-toolbar">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+          <mat-label>Buscar</mat-label>
+          <input
+            matInput
+            [value]="searchControl()"
+            (input)="onSearchInput($any($event.target).value)"
+            placeholder="Nombre o correo"
+          />
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="select-field">
+          <mat-label>Rol</mat-label>
+          <mat-select [value]="selectedRoleId()" (selectionChange)="onRoleChange($event.value)">
+            <mat-option [value]="null">Todos</mat-option>
+            @for (role of roles(); track role.id) {
+              <mat-option [value]="role.id">{{ role.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="select-field">
+          <mat-label>Estado</mat-label>
+          <mat-select [value]="selectedStatus()" (selectionChange)="onStatusChange($event.value)">
+            @for (option of statusOptions; track option.value) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <div class="filters-actions">
+          <app-button
+            variant="ghost"
+            matIcon="filter_alt_off"
+            [iconOnly]="true"
+            (onClick)="clearFilters()"
+            matTooltip="Limpiar filtros"
+          ></app-button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Tabla con mat-table y fila expandible -->
+  <div class="tbl-card">
+    @if (isLoading()) {
+      <div class="loading-overlay">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    }
+    <div class="table-container">
+      <table mat-table [dataSource]="users()" multiTemplateDataRows>
+        <ng-container matColumnDef="expand">
+          <th mat-header-cell *matHeaderCellDef style="width: 28px"></th>
+          <td mat-cell *matCellDef="let user">
+            <mat-icon class="row-chevron" [class.rotated]="expandedUserId() === user.id"
+              >chevron_right</mat-icon
+            >
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="user">
+          <th mat-header-cell *matHeaderCellDef style="width: 28%">Usuario</th>
+          <td mat-cell *matCellDef="let user">
+            <div class="user-cell">
+              <div class="user-avatar" [ngStyle]="getAvatarStyle(user.roles[0]?.name ?? '')">
+                {{ getInitials(user.name) }}
+              </div>
+              <div>
+                <div class="user-name">{{ user.name }}</div>
+                <div class="user-email">{{ user.email }}</div>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef style="width: 18%">Rol</th>
+          <td mat-cell *matCellDef="let user">
+            <span class="role-badge" [ngClass]="getRoleBadgeClass(user.roles[0]?.name ?? '')">
+              {{ user.roles[0]?.name ?? 'Sin rol' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="branches">
+          <th mat-header-cell *matHeaderCellDef>Sucursales</th>
+          <td mat-cell *matCellDef="let user">
+            <span class="branch-count">
+              <span class="branch-count-num">{{ user.branches.length }}</span>
+              {{ user.branches.length === 1 ? 'sucursal asignada' : 'sucursales asignadas' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef style="width: 90px">Estado</th>
+          <td mat-cell *matCellDef="let user">
+            <app-badge
+              [variant]="getStatusVariant(user.isActive)"
+              [label]="getStatusLabel(user.isActive)"
+            ></app-badge>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions" stickyEnd>
+          <th mat-header-cell *matHeaderCellDef class="actions-header"></th>
+          <td mat-cell *matCellDef="let user" (click)="$event.stopPropagation()">
+            <div class="row-actions">
+              <button *appHasPermission="Permissions.users.update" class="auth-btn edit" (click)="openEditDialog(user)" matTooltip="Editar">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path
+                    d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z"
+                    stroke="currentColor"
+                    stroke-width="1.3"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+              <button
+                *appHasPermission="Permissions.users.resetPassword"
+                class="auth-btn"
+                (click)="openResetPasswordDialog(user)"
+                matTooltip="Restablecer contraseña"
+                style="background: #eff3ff; color: #2f4499; border-color: #c7d2fe"
+              >
+                <span
+                  class="material-symbols-outlined"
+                  style="font-size: 16px; width: 16px; height: 16px; line-height: 16px"
+                  >lock_reset</span
+                >
+              </button>
+              <button *appHasPermission="Permissions.users.delete" class="auth-btn delete" (click)="deleteUser(user)" matTooltip="Eliminar">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                  />
+                </svg>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Columna expandida (solo para la fila de detalle) -->
+        <ng-container matColumnDef="expandedDetail">
+          <td mat-cell *matCellDef="let user" [attr.colspan]="displayedColumns.length">
+            @if (isRowExpanded(user)) {
+              <div class="expand-body">
+                <div class="expand-section">
+                  <div class="expand-label">Sucursales asignadas</div>
+                  <div class="branches-wrap">
+                    @for (b of user.branches; track b.id) {
+                      <span class="bc">{{ b.name }}</span>
+                    }
+                    @if (user.branches.length === 0) {
+                      <span class="bc-empty">Sin sucursales asignadas</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </td>
+        </ng-container>
+
+        <!-- Header row -->
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+
+        <!-- Fila principal -->
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumns"
+          class="main-row"
+          [class.open]="isRowExpanded(row)"
+          (click)="toggleRow(row.id)"
+        ></tr>
+
+        <!-- Fila expandida -->
+        <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+
+        <!-- Empty state -->
+        <tr class="empty-row" *matNoDataRow>
+          <td [attr.colspan]="displayedColumns.length">
+            <div class="empty-state">
+              <mat-icon>person_search</mat-icon>
+              <p>No se encontraron usuarios</p>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <app-paginator
+        [totalItems]="totalCount()"
+        [currentPage]="pageIndex() + 1"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="[10, 25, 50]"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      ></app-paginator>
+    </div>
+  </div>
+</section>
